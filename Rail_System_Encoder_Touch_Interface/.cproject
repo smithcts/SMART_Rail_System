@@ -162,11 +162,8 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
-					<fileInfo id="fr.ac6.managedbuild.config.gnu.cross.exe.debug.715715595.1437497731" name="VSCREEN_MultiPage.cpp" rcbsApplicability="disable" resourcePath="src/VSCREEN_MultiPage.cpp" toolsToInvoke="fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.1035493358.1623799838">
-						<tool id="fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.1035493358.1623799838" name="MCU G++ Compiler" superClass="fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.1035493358">
-							<inputType id="fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.input.cpp.14904940" superClass="fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.input.cpp"/>
-							<inputType id="fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.input.s.949268035" superClass="fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.input.s"/>
-						</tool>
+					<fileInfo id="fr.ac6.managedbuild.config.gnu.cross.exe.debug.715715595.1936291306" name="Slider_Menu_GUI.cpp" rcbsApplicability="disable" resourcePath="src/Slider_Menu_GUI.cpp" toolsToInvoke="fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.1035493358.997549911">
+						<tool id="fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.1035493358.997549911" name="MCU G++ Compiler" superClass="fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.1035493358"/>
 					</fileInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="HAL_Driver"/>
@@ -365,5 +362,12 @@
 		</scannerConfigBuildInfo>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
-	<storageModule moduleId="refreshScope"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Debug">
+			<resource resourceType="PROJECT" workspacePath="/Rail_System_Encoder_Touch_Interface"/>
+		</configuration>
+		<configuration configurationName="Release">
+			<resource resourceType="PROJECT" workspacePath="/Rail_System_Encoder_Touch_Interface"/>
+		</configuration>
+	</storageModule>
 </cproject>

@@ -131,7 +131,7 @@ GUI_COLOR _ColorTemp2      = GUI_BLUE;
 //
 // Arrays of temperature values
 //
-static I16 _aTemp1[277], _aTemp2[277];
+static I16 _aTemp1[277], _aTemp2[300];
 
 /*********************************************************************
 *
@@ -139,26 +139,9 @@ static I16 _aTemp1[277], _aTemp2[277];
 *
 **********************************************************************
 */
-static I16 _GetRandomValue(I16 Old) {
-  int MaxValue;
-  int yD;
-  int MaxDiff;
-  I16 yNew;
+static float _GetRandomValue(I16 Old) {
 
-  MaxDiff  = 2;
-  MaxValue = _TempMax - _TempMin;
-  yD       = MaxDiff - (rand() % MaxDiff);
-  if (rand() & 1) {
-    yNew = Old + yD;
-  } else {
-    yNew = Old - yD;
-  }
-  if (yNew > MaxValue) {
-    yNew -= yD;
-  } else { if (yNew < 0)
-    yNew += yD;
-  }
-  return cnt;
+  return encoderCount;
 }
 
 /*********************************************************************
@@ -172,7 +155,7 @@ static void _InitRandomData(I16 * paY, int n) {
   MaxValue = _TempMax - _TempMin;
   for (i = 0; i < n; i++) {
     if (!i) {
-      paY[i] = rand() % MaxValue;
+      paY[i] = MaxValue;
     } else {
       paY[i] = _GetRandomValue(paY[i-1]);
     }
@@ -267,7 +250,7 @@ static void _SetProgbarValue(int Id, I16 Value) {
   WM_HWIN hItem;
 
   hItem = WM_GetDialogItem(_hDialogMain, Id);
-  PROGBAR_SetValue(hItem, cnt);
+  PROGBAR_SetValue(hItem, encoderCount);
   Value = 100 - Value + _TempMin;
   acBuffer[2] = '0' + Value % 10;
   acBuffer[1] = (Value >=  10) ? '0' + (Value % 100) /  10 : ' ';
@@ -320,7 +303,7 @@ static void _cbDialogMain(WM_MESSAGE * pMsg) {
     _SetProgbarValue(GUI_ID_PROGBAR0, _aTemp1[GUI_COUNTOF(_aTemp1) - 1]);
     hItem = WM_GetDialogItem(hDlg, GUI_ID_PROGBAR1);
     WIDGET_SetEffect(hItem, &WIDGET_Effect_3D);
-    _SetProgbarValue(GUI_ID_PROGBAR1, cnt);
+    _SetProgbarValue(GUI_ID_PROGBAR1, 0);
     //
     // Init edit widgets
     //
@@ -393,6 +376,7 @@ void MainTask(void) {
   // Add new temperatures...
   //
   Index = GUI_COUNTOF(_aTemp1) - 1;
+
   while (1) {
     WM_HWIN hItem;
     GUI_Delay(100); // Wait a while
@@ -405,7 +389,7 @@ void MainTask(void) {
     // Add new values
     //
     _aTemp1[Index] = _GetRandomValue(_aTemp1[Index - 1]);
-    _aTemp2[Index] = _GetRandomValue(_aTemp2[Index - 1]);
+    _aTemp2[Index] = encoderCount + 100;
     //
     // Update windows
     //

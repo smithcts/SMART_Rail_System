@@ -53,13 +53,18 @@
 #include "bsp.h"
 #include "motor.h"
 #include "encoder.h"
+#include "system_variables.h"
+#include "Derivative_Filter.h"
+#include "pid.h"
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 
 #endif /* __MAIN_H */
 
-extern uint32_t cnt;
+extern float motorSpeed, motorRevolutions, duty_cycle, speedCommand;
+extern int32_t encoderCount;
+
 
 void ExecSetup(void);
 void ExecAbout(void);

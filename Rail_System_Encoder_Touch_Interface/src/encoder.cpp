@@ -114,7 +114,7 @@ void Encoder::set(int32_t count32)
 
 void Encoder::Error_Handler(void)
 {
-  /* Turn LED3 on */
+  /* Turn LED1 on */
   BSP_LED_On(LED1);
   while(1)
   {

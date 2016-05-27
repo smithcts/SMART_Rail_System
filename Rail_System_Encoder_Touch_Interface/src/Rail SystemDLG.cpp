@@ -18,8 +18,8 @@
 **********************************************************************
 */
 
-
-
+#include "main.h"
+#include "encoder.h"
 #include "DIALOG.h"
 
 /*********************************************************************
@@ -44,8 +44,9 @@
 //
 #define RECOMMENDED_MEMORY (1024L * 15)
 
-// USER START (Optionally insert additional defines)
-// USER END
+
+Motor motor;
+int checkboxState, state;
 
 /*********************************************************************
 *
@@ -54,25 +55,25 @@
 **********************************************************************
 */
 
-// USER START (Optionally insert additional static data)
-// USER END
 
 /*********************************************************************
 *
 *       _aDialogCreate
 */
 static const GUI_WIDGET_CREATE_INFO _aDialogCreate[] = {
-  { FRAMEWIN_CreateIndirect, "Rail System", ID_FRAMEWIN_0, 0, 0, 480, 272, 0, 0x0, 0 },
-  { BUTTON_CreateIndirect, "Start", ID_BUTTON_0, 50, 130, 80, 40, 0, 0x0, 0 },
-  { EDIT_CreateIndirect, "Edit", ID_EDIT_0, 350, 80, 80, 20, 0, 0x64, 0 },
-  { SPINBOX_CreateIndirect, "Spinbox", ID_SPINBOX_0, 350, 25, 80, 40, 0, 0x0, 0 },
-  { PROGBAR_CreateIndirect, "Progbar", ID_PROGBAR_0, 350, 120, 80, 20, 0, 0x0, 0 },
-  { TEXT_CreateIndirect, "Desired Speed :", ID_TEXT_0, 260, 37, 80, 20, 0, 0x0, 0 },
-  { TEXT_CreateIndirect, "Distance Traveled :", ID_TEXT_1, 245, 82, 100, 20, 0, 0x0, 0 },
-  { TEXT_CreateIndirect, "Progress :", ID_TEXT_2, 290, 122, 80, 20, 0, 0x0, 0 },
-  { BUTTON_CreateIndirect, "Stop", ID_BUTTON_1, 50, 190, 80, 40, 0, 0x0, 0 },
-  { CHECKBOX_CreateIndirect, "Checkbox", ID_CHECKBOX_0, 60, 65, 80, 20, 0, 0x0, 0 },
-  { CHECKBOX_CreateIndirect, "Checkbox", ID_CHECKBOX_1, 60, 35, 80, 20, 0, 0x0, 0 },
+  { FRAMEWIN_CreateIndirect, "Rail System",			 ID_FRAMEWIN_0, 0, 0, 480, 272, 0, 0x0, 0 },
+  { BUTTON_CreateIndirect, "Start",					 ID_BUTTON_0, 50, 130, 80, 40, 0, 0x0, 0 },
+  { EDIT_CreateIndirect, "Edit",					 ID_EDIT_0, 350, 80, 80, 20, 0, 0x64, 0 },
+  { EDIT_CreateIndirect, "Edit",					 GUI_ID_EDIT1, 350, 160, 80, 20, 0, 0x0, 0 },
+  { EDIT_CreateIndirect, "Edit",					 GUI_ID_EDIT2, 350, 200, 80, 20, 0, 0x0, 0 },
+  { SPINBOX_CreateIndirect, "Spinbox",				 ID_SPINBOX_0, 350, 25, 80, 40, 0, 0x0, 0 },
+  { PROGBAR_CreateIndirect, "Progbar",				 ID_PROGBAR_0, 350, 120, 80, 20, 0, 0x0, 0 },
+  { TEXT_CreateIndirect, "Desired Speed :",			 ID_TEXT_0, 260, 37, 80, 20, 0, 0x0, 0 },
+  { TEXT_CreateIndirect, "Distance Traveled :",		 ID_TEXT_1, 245, 82, 100, 20, 0, 0x0, 0 },
+  { TEXT_CreateIndirect, "Progress :",				 ID_TEXT_2, 290, 122, 80, 20, 0, 0x0, 0 },
+  { BUTTON_CreateIndirect, "Stop",					 ID_BUTTON_1, 50, 190, 80, 40, 0, 0x0, 0 },
+  { CHECKBOX_CreateIndirect, "Checkbox",			 ID_CHECKBOX_0, 60, 65, 80, 20, 0, 0x0, 0 },
+  { CHECKBOX_CreateIndirect, "Checkbox",			 ID_CHECKBOX_1, 60, 35, 80, 20, 0, 0x0, 0 },
   // USER START (Optionally insert additional widgets)
   // USER END
 };
@@ -84,8 +85,22 @@ static const GUI_WIDGET_CREATE_INFO _aDialogCreate[] = {
 **********************************************************************
 */
 
-// USER START (Optionally insert additional static code)
-// USER END
+//
+// Dialog handles
+//
+WM_HWIN _hDialogMain;
+
+
+/*********************************************************************
+*
+*       _SetEditValue
+*/
+static void _SetEditValue(int Id, float Value) {
+
+  WM_HWIN hItem;
+  hItem = WM_GetDialogItem(_hDialogMain, Id);
+  EDIT_SetFloatValue(hItem, Value);
+}
 
 /*********************************************************************
 *
@@ -95,16 +110,26 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
   WM_HWIN hItem;
   int     NCode;
   int     Id;
-  // USER START (Optionally insert additional variables)
-  // USER END
+
+
 
   switch (pMsg->MsgId) {
   case WM_INIT_DIALOG:
     //
-    // Initialization of 'Edit'
+    // Initialization of 'Edit0'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_EDIT_0);
-    EDIT_SetText(hItem, "123");
+	EDIT_SetFloatMode(hItem, 0.0, -999.0, 999.0, 2, 0);
+    //
+    // Initialization of 'Edit1'
+    //
+    hItem = WM_GetDialogItem(pMsg->hWin, GUI_ID_EDIT1);
+	EDIT_SetFloatMode(hItem, 0.0, -999.0, 999.0, 2, 0);
+    //
+    // Initialization of 'Edit2'
+    //
+    hItem = WM_GetDialogItem(pMsg->hWin, GUI_ID_EDIT2);
+	EDIT_SetFloatMode(hItem, 0.0, -999.0, 999.0, 2, 0);
     //
     // Initialization of 'Checkbox'
     //
@@ -115,8 +140,7 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_1);
     CHECKBOX_SetText(hItem, "Far Limit");
-    // USER START (Optionally insert additional code for further widget initialization)
-    // USER END
+
     break;
   case WM_NOTIFY_PARENT:
     Id    = WM_GetId(pMsg->hWinSrc);
@@ -125,15 +149,12 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
     case ID_BUTTON_0: // Notifications sent by 'Start'
       switch(NCode) {
       case WM_NOTIFICATION_CLICKED:
-        // USER START (Optionally insert code for reacting on notification message)
-        // USER END
+
         break;
       case WM_NOTIFICATION_RELEASED:
-        // USER START (Optionally insert code for reacting on notification message)
-        // USER END
+    	  motor.dutyCycle(30);
         break;
-      // USER START (Optionally insert additional code for further notification handling)
-      // USER END
+
       }
       break;
     case ID_EDIT_0: // Notifications sent by 'Edit'
@@ -179,33 +200,29 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
     case ID_BUTTON_1: // Notifications sent by 'Stop'
       switch(NCode) {
       case WM_NOTIFICATION_CLICKED:
-        // USER START (Optionally insert code for reacting on notification message)
-        // USER END
+
         break;
       case WM_NOTIFICATION_RELEASED:
-        // USER START (Optionally insert code for reacting on notification message)
-        // USER END
+    	  motor.dutyCycle(0);
         break;
-      // USER START (Optionally insert additional code for further notification handling)
-      // USER END
+
       }
       break;
     case ID_CHECKBOX_0: // Notifications sent by 'Checkbox'
       switch(NCode) {
       case WM_NOTIFICATION_CLICKED:
-        // USER START (Optionally insert code for reacting on notification message)
-        // USER END
+
         break;
       case WM_NOTIFICATION_RELEASED:
-        // USER START (Optionally insert code for reacting on notification message)
-        // USER END
+
         break;
       case WM_NOTIFICATION_VALUE_CHANGED:
-        // USER START (Optionally insert code for reacting on notification message)
-        // USER END
+
+    	  hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_0);
+    	  checkboxState = CHECKBOX_GetState(hItem);
+    	  state = CHECKBOX_IsChecked(hItem);
         break;
-      // USER START (Optionally insert additional code for further notification handling)
-      // USER END
+
       }
       break;
     case ID_CHECKBOX_1: // Notifications sent by 'Checkbox'
@@ -221,6 +238,7 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
       case WM_NOTIFICATION_VALUE_CHANGED:
         // USER START (Optionally insert code for reacting on notification message)
         // USER END
+
         break;
       // USER START (Optionally insert additional code for further notification handling)
       // USER END
@@ -245,12 +263,6 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
 **********************************************************************
 */
 
-//
-// Dialog handles
-//
-WM_HWIN _hDialogMain;
-
-
 /*********************************************************************
 *
 *       MainTask
@@ -269,13 +281,11 @@ void MainTask(void) {
 
 
   while (1) {
-/*    GUI_Delay(10);
-    _SetEditValue(GUI_ID_EDIT3, AzimuthalRevolutions);
-    _SetEditValue(GUI_ID_EDIT5, (int)(Divisor));
-    _SetEditValue(GUI_ID_EDIT6, VerticalDistance);
-    _SetEditValue(GUI_ID_EDIT7, ClawRevolutions);
-    _SetEditValue(GUI_ID_EDIT8, ClawDistance);
-    _SetProgbarValue(GUI_ID_PROGBAR0, (int)(ClawDistance * 400));*/
+    GUI_Delay(10);
+    _SetEditValue(ID_EDIT_0, (int)(encoderCount));
+    _SetEditValue(GUI_ID_EDIT1, motorSpeed);
+    _SetEditValue(GUI_ID_EDIT2, motorRevolutions);
+
   }
 }
 /*************************** End of file ****************************/

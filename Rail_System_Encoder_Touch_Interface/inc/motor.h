@@ -8,18 +8,11 @@
 #ifndef MOTOR_H_
 #define MOTOR_H_
 
-typedef enum
-{
-	Azimuthal_Motor,
-	Claw_Motor,
-	Vertical_Motor
-}motor_id_t;
-
 class Motor
 {
 public:
 
-	Motor(motor_id_t id);
+	Motor(void);
 
 	int32_t read(void);
 
@@ -32,7 +25,6 @@ public:
 	void Error_Handler(void);
 
 private:
-	motor_id_t motor_id_;
 	int16_t duty_;
 	TIM_HandleTypeDef TIM_HANDLE_;
 };

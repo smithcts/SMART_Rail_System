@@ -44,12 +44,14 @@
 /* Private variables ---------------------------------------------------------*/
 
 TIM_HandleTypeDef TimHandle;
-TIM_HandleTypeDef MotorPWM;
 
-Encoder encoder;
 
-uint32_t cnt;
-uint16_t dir;
+float motorSpeed, motorRevolutions;
+int32_t encoderCount;
+
+Pid pidSpeed(3.0f, 0.0f, 0.0f, -30, 30, -100, 100);
+float desiredSpeed = 20.0f;
+float duty_cycle;
 
 TIM_OC_InitTypeDef sConfig;
 
@@ -118,21 +120,19 @@ int main(void) {
 	GPIO_InitTypeDef GPIO_InitStruct;
 
 	// Enable GPIO Ports
-	__HAL_RCC_GPIOI_CLK_ENABLE()
-	;
+	__HAL_RCC_GPIOG_CLK_ENABLE();
 
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-	GPIO_InitStruct.Pin = GPIO_PIN_0;
-	HAL_GPIO_Init(GPIOI, &GPIO_InitStruct);
+	GPIO_InitStruct.Pin = GPIO_PIN_6;
+	HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
 	/***********************************************************/
 
 	/* Init the STemWin GUI Library */
 	BSP_SDRAM_Init(); /* Initializes the SDRAM device */
-	__HAL_RCC_CRC_CLK_ENABLE()
-	; /* Enable the CRC Module */
+	__HAL_RCC_CRC_CLK_ENABLE(); /* Enable the CRC Module */
 
 	GUI_Init();
 	GUI_SelectLayer(0);
@@ -154,10 +154,24 @@ int main(void) {
  * @retval None
  */
 
+
+Encoder encoder;
+static DerivativeFilter speedFilter(0.001, 0.5f, 0.707);
+float speedCommand = 50.0f;
+static int dir;
+
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	TouchUpdate();
-	cnt = encoder.read();
+	encoderCount = encoder.read();
 	dir = encoder.direction();
+
+	motorRevolutions = -1.0f * (encoderCount / Pulses_Per_Revolution / Motor_Gear_Ratio);
+
+	motorSpeed = speedFilter.calculate(motorRevolutions);
+
+	duty_cycle = pidSpeed.calculate(desiredSpeed - motorSpeed, 0.001);
+
 
 }
 

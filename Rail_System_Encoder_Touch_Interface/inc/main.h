@@ -56,15 +56,17 @@
 #include "system_variables.h"
 #include "Derivative_Filter.h"
 #include "pid.h"
+#include "stdlib.h"
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 
 #endif /* __MAIN_H */
 
-extern float motorSpeed, motorRevolutions, duty_cycle, speedCommand;
+extern float kp, ki, kd;
+extern float motorSpeed, motorRevolutions, motorDistance, speedCommand, speedError, desiredSpeed, cutOff_frequency;
 extern int32_t encoderCount;
-
+extern int16_t duty_cycle, pwm;
 
 void ExecSetup(void);
 void ExecAbout(void);

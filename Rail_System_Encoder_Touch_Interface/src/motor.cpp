@@ -1,7 +1,7 @@
 #include "main.h"
 
 /* Timer handler declaration*/
-TIM_HandleTypeDef    TimHandle_TIM10;
+TIM_HandleTypeDef    TimHandle_TIM1;
 
 /* Timer Output Compare Configuration Structure declaration */
 TIM_OC_InitTypeDef sMotorConfig;
@@ -9,9 +9,9 @@ TIM_OC_InitTypeDef sMotorConfig;
 Motor::Motor(void)
 {
 
-		TIM_HANDLE_ = TimHandle_TIM10;
+		TIM_HANDLE_ = TimHandle_TIM1;
 
-		TIM_HANDLE_.Instance = TIM10;
+		TIM_HANDLE_.Instance = TIM1;
 
 		TIM_HANDLE_.Init.Prescaler         = 99;
 		TIM_HANDLE_.Init.Period            = 99;
@@ -68,6 +68,18 @@ void Motor::stop(void)
 
 void Motor::dutyCycle(int16_t duty)
 {
+/*
+	if(duty < 0){
+		sMotorConfig.Pulse = -1 * duty;
+		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_RESET);
+	}
+
+	else{
+		sMotorConfig.Pulse = duty;
+		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_SET);
+	}
+*/
+
 	/* Set the pulse value for channel 1 */
 	sMotorConfig.Pulse = duty;
 	if (HAL_TIM_PWM_ConfigChannel(&TIM_HANDLE_, &sMotorConfig, TIM_CHANNEL_1) != HAL_OK)

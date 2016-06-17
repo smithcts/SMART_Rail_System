@@ -1,5 +1,6 @@
 /**
  ******************************************************************************
+
  * @file    STemWin/STemWin_HelloWorld/Src/main.c
  * @author  MCD Application Team
  * @version V1.0.2
@@ -38,20 +39,31 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
+
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 
 TIM_HandleTypeDef TimHandle;
+Encoder encoder;
 
-
-float motorSpeed, motorRevolutions;
+float motorSpeed, motorRevolutions, motorDistance;
 int32_t encoderCount;
 
-Pid pidSpeed(3.0f, 0.0f, 0.0f, -30, 30, -100, 100);
-float desiredSpeed = 20.0f;
-float duty_cycle;
+float kp = 1.0f;
+float ki = 0.0f;
+float kd = 0.0f;
+float desiredSpeed = 5.0f;
+int16_t duty_cycle;
+int16_t pwm = 50;
+float speedError;
+float cutOff_frequency = 50.0f;
+
+
+Motor motor;
+DerivativeFilter speedFilter(0.001, cutOff_frequency, 0.707);
+Pid pidSpeed(kp, ki, kd, -30.0f, 30.0f, -100.0f, 100.0f);
 
 TIM_OC_InitTypeDef sConfig;
 
@@ -155,24 +167,39 @@ int main(void) {
  */
 
 
-Encoder encoder;
-static DerivativeFilter speedFilter(0.001, 0.5f, 0.707);
-float speedCommand = 50.0f;
+
+
 static int dir;
-
-
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+
 	TouchUpdate();
 	encoderCount = encoder.read();
 	dir = encoder.direction();
 
-	motorRevolutions = -1.0f * (encoderCount / Pulses_Per_Revolution / Motor_Gear_Ratio);
+	motorRevolutions = ((float)encoderCount / Pulses_Per_Revolution / Motor_Gear_Ratio);
 
-	motorSpeed = speedFilter.calculate(motorRevolutions);
+	motorDistance = motorRevolutions * 3.145f * 1.019f;
 
-	duty_cycle = pidSpeed.calculate(desiredSpeed - motorSpeed, 0.001);
+	motorSpeed = speedFilter.calculate(motorDistance);
+
+	speedError = desiredSpeed - motorSpeed;
+
+	duty_cycle = pidSpeed.calculate(speedError, 0.001);
 
 
+/*	if (pwm < 0)
+	{
+
+		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_SET);
+		motor.dutyCycle(abs(pwm));
+	}
+	else
+	{
+		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_RESET);
+		motor.dutyCycle(pwm);
+	}*/
+
+	motor.dutyCycle(pwm);
 }
 
 /**

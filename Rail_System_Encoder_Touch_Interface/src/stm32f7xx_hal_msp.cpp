@@ -77,23 +77,23 @@
 		  */
 		void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef *htim)
 		{
-		  GPIO_InitTypeDef   GPIO_InitStruct_TIM10;
+		  GPIO_InitTypeDef   GPIO_InitStruct_TIM1;
 
 		  /*##-1- Enable peripherals and GPIO Clocks #################################*/
 		  /* TIMx Peripheral clock enable */
-		  __TIM10_CLK_ENABLE();
+		  __TIM1_CLK_ENABLE();
 
 		  /* Enable all GPIO Channels Clock requested */
-		  __HAL_RCC_GPIOF_CLK_ENABLE();
+		  __HAL_RCC_GPIOA_CLK_ENABLE();
 
 
 		  /* Common configuration for all channels */
-		  GPIO_InitStruct_TIM10.Mode = GPIO_MODE_AF_PP;
-		  GPIO_InitStruct_TIM10.Pull = GPIO_PULLUP;
-		  GPIO_InitStruct_TIM10.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-		  GPIO_InitStruct_TIM10.Alternate = GPIO_AF3_TIM10;
-		  GPIO_InitStruct_TIM10.Pin = GPIO_PIN_6;
-		  HAL_GPIO_Init(GPIOF, &GPIO_InitStruct_TIM10);
+		  GPIO_InitStruct_TIM1.Mode = GPIO_MODE_AF_PP;
+		  GPIO_InitStruct_TIM1.Pull = GPIO_NOPULL;
+		  GPIO_InitStruct_TIM1.Speed = GPIO_SPEED_FREQ_LOW;
+		  GPIO_InitStruct_TIM1.Alternate = GPIO_AF1_TIM1;
+		  GPIO_InitStruct_TIM1.Pin = GPIO_PIN_8;
+		  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct_TIM1);
 		}
 
 		/**

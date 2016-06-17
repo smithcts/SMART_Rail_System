@@ -37,7 +37,7 @@ Requirements: WindowManager - (x)
 *
 **********************************************************************
 */
-#define MAX_VALUE 180
+#define MAX_VALUE 100
 
 //
 // Recommended memory to run the sample with adequate performance
@@ -59,7 +59,7 @@ static int _Stop = 0;
 
 static GUI_COLOR _aColor[] = {GUI_RED, GUI_GREEN, GUI_LIGHTBLUE}; // Array of colors for the GRAPH_DATA objects
 
-Motor motor;
+//Motor motor;
 
 
 //
@@ -84,12 +84,26 @@ static const GUI_WIDGET_CREATE_INFO _aDialogCreate[] = {
   { CHECKBOX_CreateIndirect,  0,                   GUI_ID_CHECK6    , 180, 180,  50,   0 },
   { CHECKBOX_CreateIndirect,  0,                   GUI_ID_CHECK7    , 180, 200,  50,   0 },
   { BUTTON_CreateIndirect,    "Full Screen",       GUI_ID_BUTTON0   , 240, 180,  65,  18 },
-  { BUTTON_CreateIndirect,    "Start",     		   GUI_ID_BUTTON1   , 400, 140,  65,  18 },
-  { BUTTON_CreateIndirect,    "Stop",       	   GUI_ID_BUTTON2   , 400, 170,  65,  18 },
-  { BUTTON_CreateIndirect,    "Direction",	       GUI_ID_BUTTON3   , 400, 200,  65,  18 },
+  { BUTTON_CreateIndirect,    "Start",     		   GUI_ID_BUTTON1   , 100, 225,  65,  18 },
+  { BUTTON_CreateIndirect,    "Stop",       	   GUI_ID_BUTTON2   , 200, 225,  65,  18 },
+  { BUTTON_CreateIndirect,    "Direction",	       GUI_ID_BUTTON3   , 300, 225,  65,  18 },
   { CHECKBOX_CreateIndirect,  0,                   GUI_ID_CHECK8    , 240, 200,  70,   0 },
   { EDIT_CreateIndirect,	 0, 	   			   GUI_ID_EDIT0		, 410,  20,  45,  20 },
   { EDIT_CreateIndirect,	 0, 	   			   GUI_ID_EDIT1		, 410,  50,  45,  20 },
+  { EDIT_CreateIndirect,	 0, 	   			   GUI_ID_EDIT2		, 410,  80,  45,  20 },
+  { EDIT_CreateIndirect,	 0, 	   			   GUI_ID_EDIT3		, 410,  110,  45,  20 },
+  { EDIT_CreateIndirect,	 0, 	   			   GUI_ID_EDIT4		, 410,  140,  45,  20 },
+  { EDIT_CreateIndirect,	 0, 	   			   GUI_ID_EDIT5		, 410,  170,  45,  20 },
+  { EDIT_CreateIndirect,	 0, 	   			   GUI_ID_EDIT6		, 410,  200,  45,  20 },
+  { TEXT_CreateIndirect,      "motorSpeed",        0                ,  350, 20,  50,  20 },
+  { TEXT_CreateIndirect,      "duty_cycle",        0                ,  350, 50,  50,  20 },
+  { TEXT_CreateIndirect,      "wheelSpeed",        0                ,  350, 80,  50,  20 },
+  { TEXT_CreateIndirect,      "motorDistance",     0                ,  350, 110,  50,  20 },
+  { TEXT_CreateIndirect,      "encoderCount",      0                ,  350, 140,  50,  20 },
+  { TEXT_CreateIndirect,      "motorRevolutions",  0                ,  350, 170,  50,  20 },
+  { TEXT_CreateIndirect,      "speedError",        0                ,  350, 200,  50,  20 },
+
+
 
 };
 
@@ -111,13 +125,13 @@ static void _AddValues(void) {
   unsigned i;
 
   for (i = 0; i < GUI_COUNTOF(_aColor); i++) {
-    _aValue[0] = encoderCount;
-    _aValue[1] = motorSpeed;
-    _aValue[2] = encoderCount + 50;
+    _aValue[0] = speedError;
+    _aValue[1] = motorSpeed + 50;
+    _aValue[2] = duty_cycle;
     if (_aValue[i] > MAX_VALUE) {
       _aValue[i] = MAX_VALUE;
-    } else if (_aValue[i] < 0) {
-      _aValue[i] = 0;
+    } else if (_aValue[i] < -MAX_VALUE) {
+      _aValue[i] = -MAX_VALUE;
     }
     GRAPH_DATA_YT_AddValue(_ahData[i], _aValue[i]);
   }
@@ -246,6 +260,17 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
 	EDIT_SetFloatMode(hItem, 0.0, -999.0, 999.0, 2, 0);
 	hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT1);
 	EDIT_SetFloatMode(hItem, 0.0, -999.0, 999.0, 2, 0);
+	hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT2);
+	EDIT_SetFloatMode(hItem, 0.0, -999.0, 999.0, 2, 0);
+	hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT3);
+	EDIT_SetFloatMode(hItem, 0.0, -999.0, 999.0, 2, 0);
+	hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT4);
+	EDIT_SetDecMode(hItem,0,-200000,200000,0,0);
+	hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT5);
+	EDIT_SetFloatMode(hItem, 0.0, -999.0, 999.0, 2, 0);
+	hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT6);
+	EDIT_SetFloatMode(hItem, 0.0, -999.0, 999.0, 2, 0);
+
 
     hItem = WM_GetDialogItem(hDlg, GUI_ID_GRAPH0);
     //
@@ -266,13 +291,13 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
     //
     // Create and add vertical scale
     //
-    _hScaleV = GRAPH_SCALE_Create( 35, GUI_TA_RIGHT, GRAPH_SCALE_CF_VERTICAL, 25);
+    _hScaleV = GRAPH_SCALE_Create( 35, GUI_TA_RIGHT, GRAPH_SCALE_CF_VERTICAL, 10);
     GRAPH_SCALE_SetTextColor(_hScaleV, GUI_YELLOW);
     GRAPH_AttachScale(hItem, _hScaleV);
     //
     // Create and add horizontal scale
     //
-    _hScaleH = GRAPH_SCALE_Create(155, GUI_TA_HCENTER, GRAPH_SCALE_CF_HORIZONTAL, 50);
+    _hScaleH = GRAPH_SCALE_Create(155, GUI_TA_HCENTER, GRAPH_SCALE_CF_HORIZONTAL, 10);
     GRAPH_SCALE_SetTextColor(_hScaleH, GUI_DARKGREEN);
     GRAPH_AttachScale(hItem, _hScaleH);
     //
@@ -333,13 +358,17 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
         break;
       case GUI_ID_BUTTON1:
 
-    	  motor.dutyCycle((int)duty_cycle);
+//    	  motor.dutyCycle((int)duty_cycle);
+    	  HAL_GPIO_WritePin(GPIOG,GPIO_PIN_6,GPIO_PIN_SET);
     	break;
       case GUI_ID_BUTTON2:
-    	  motor.dutyCycle(0);
+//    	  motor.dutyCycle(0);
     	  break;
       case GUI_ID_BUTTON3:
-    	  HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_6);
+//    	  desiredSpeed = desiredSpeed * -1;
+//    	  HAL_GPIO_TogglePin(GPIOG,GPIO_PIN_6);
+    	  HAL_GPIO_WritePin(GPIOG,GPIO_PIN_6,GPIO_PIN_RESET);
+    	  break;
       }
       break;
     case WM_NOTIFICATION_VALUE_CHANGED:
@@ -494,7 +523,22 @@ void MainTask(void) {
       EDIT_SetFloatValue(hItem, motorSpeed);
 
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT1);
-      EDIT_SetFloatValue(hItem, duty_cycle);
+      EDIT_SetFloatValue(hItem, (float)duty_cycle);
+
+      hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT2);
+      EDIT_SetFloatValue(hItem, desiredSpeed);
+
+      hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT3);
+      EDIT_SetFloatValue(hItem, motorDistance);
+
+      hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT4);
+      EDIT_SetValue(hItem, encoderCount);
+
+      hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT5);
+      EDIT_SetFloatValue(hItem, motorRevolutions);
+
+      hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT6);
+      EDIT_SetFloatValue(hItem, speedError);
       _AddValues();
     }
     GUI_Exec();

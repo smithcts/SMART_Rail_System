@@ -68,26 +68,14 @@ static GUI_COLOR _aColor[] = {GUI_RED, GUI_GREEN, GUI_LIGHTBLUE}; // Array of co
 static const GUI_WIDGET_CREATE_INFO _aDialogCreate[] = {
   { FRAMEWIN_CreateIndirect, "Graph widget demo",  0                ,   0,   0, 480, 272 },
   { GRAPH_CreateIndirect,     0,                   GUI_ID_GRAPH0    ,   5,   5, 265, 170 },
-  { TEXT_CreateIndirect,      "Spacing X:",        0                ,  10, 180,  50,  20 },
-  { TEXT_CreateIndirect,      "Spacing Y:",        0                ,  10, 200,  50,  20 },
-  { SLIDER_CreateIndirect,    0,                   GUI_ID_SLIDER0   ,  60, 180,  60,  16 },
-  { SLIDER_CreateIndirect,    0,                   GUI_ID_SLIDER1   ,  60, 200,  60,  16 },
   { CHECKBOX_CreateIndirect,  0,                   GUI_ID_CHECK0    , 130, 180,  50,   0 },
   { CHECKBOX_CreateIndirect,  0,                   GUI_ID_CHECK1    , 130, 200,  50,   0 },
-  { TEXT_CreateIndirect,      "Border",            0                , 275,   5,  35,  15 },
-  { CHECKBOX_CreateIndirect,  0,                   GUI_ID_CHECK2    , 275,  20,  35,   0 },
-  { CHECKBOX_CreateIndirect,  0,                   GUI_ID_CHECK3    , 275,  40,  35,   0 },
-  { CHECKBOX_CreateIndirect,  0,                   GUI_ID_CHECK4    , 275,  60,  35,   0 },
-  { CHECKBOX_CreateIndirect,  0,                   GUI_ID_CHECK5    , 275,  80,  35,   0 },
-  { TEXT_CreateIndirect,      "Effect",            0                , 275, 100,  35,  15 },
-  { RADIO_CreateIndirect,     0,                   GUI_ID_RADIO0    , 270, 115,  35,   0, 0, 3 },
   { CHECKBOX_CreateIndirect,  0,                   GUI_ID_CHECK6    , 180, 180,  50,   0 },
   { CHECKBOX_CreateIndirect,  0,                   GUI_ID_CHECK7    , 180, 200,  50,   0 },
   { BUTTON_CreateIndirect,    "Full Screen",       GUI_ID_BUTTON0   , 240, 180,  65,  18 },
   { BUTTON_CreateIndirect,    "Start",     		   GUI_ID_BUTTON1   , 100, 225,  65,  18 },
   { BUTTON_CreateIndirect,    "Stop",       	   GUI_ID_BUTTON2   , 200, 225,  65,  18 },
   { BUTTON_CreateIndirect,    "Direction",	       GUI_ID_BUTTON3   , 300, 225,  65,  18 },
-  { CHECKBOX_CreateIndirect,  0,                   GUI_ID_CHECK8    , 240, 200,  70,   0 },
   { EDIT_CreateIndirect,	 0, 	   			   GUI_ID_EDIT0		, 410,  20,  45,  20 },
   { EDIT_CreateIndirect,	 0, 	   			   GUI_ID_EDIT1		, 410,  50,  45,  20 },
   { EDIT_CreateIndirect,	 0, 	   			   GUI_ID_EDIT2		, 410,  80,  45,  20 },
@@ -147,7 +135,7 @@ static void _AddValues(void) {
 */
 static void _UserDraw(WM_HWIN hWin, int Stage) {
   if (Stage == GRAPH_DRAW_LAST) {
-    char acText[] = "Temperature";
+    char acText[] = "Speed (cm/s)";
     GUI_RECT Rect;
     GUI_RECT RectInvalid;
     int FontSizeY;
@@ -246,7 +234,6 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
   unsigned i;
   int      NCode;
   int      Id;
-  int      Value;
   WM_HWIN  hDlg;
   WM_HWIN  hItem;
 
@@ -303,14 +290,6 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
     //
     // Init check boxes
     //
-    hItem = WM_GetDialogItem(hDlg, GUI_ID_CHECK2);
-    CHECKBOX_SetText(hItem, "L");
-    hItem = WM_GetDialogItem(hDlg, GUI_ID_CHECK3);
-    CHECKBOX_SetText(hItem, "T");
-    hItem = WM_GetDialogItem(hDlg, GUI_ID_CHECK4);
-    CHECKBOX_SetText(hItem, "R");
-    hItem = WM_GetDialogItem(hDlg, GUI_ID_CHECK5);
-    CHECKBOX_SetText(hItem, "B");
     hItem = WM_GetDialogItem(hDlg, GUI_ID_CHECK0);
     CHECKBOX_SetText(hItem, "Stop");
     hItem = WM_GetDialogItem(hDlg, GUI_ID_CHECK1);
@@ -321,26 +300,6 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
     CHECKBOX_SetState(hItem, 1);
     hItem = WM_GetDialogItem(hDlg, GUI_ID_CHECK7);
     CHECKBOX_SetText(hItem, "VScroll");
-    hItem = WM_GetDialogItem(hDlg, GUI_ID_CHECK8);
-    CHECKBOX_SetText(hItem, "MirrorX");
-    //
-    // Init slider widgets
-    //
-    hItem = WM_GetDialogItem(hDlg, GUI_ID_SLIDER0);
-    SLIDER_SetRange(hItem, 0, 10);
-    SLIDER_SetValue(hItem, 5);
-    SLIDER_SetNumTicks(hItem, 6);
-    hItem = WM_GetDialogItem(hDlg, GUI_ID_SLIDER1);
-    SLIDER_SetRange(hItem, 0, 20);
-    SLIDER_SetValue(hItem, 5);
-    SLIDER_SetNumTicks(hItem, 6);
-    //
-    // Init radio widget
-    //
-    hItem = WM_GetDialogItem(hDlg, GUI_ID_RADIO0);
-    RADIO_SetText(hItem, "3D", 0);
-    RADIO_SetText(hItem, "flat", 1);
-    RADIO_SetText(hItem, "-", 2);
     //
     // Init button widget
     //
@@ -403,55 +362,6 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
         hItem = WM_GetDialogItem(hDlg, GUI_ID_GRAPH0);
         GRAPH_SetGridVis(hItem, CHECKBOX_IsChecked(WM_GetDialogItem(hDlg, GUI_ID_CHECK1)));
         break;
-      case GUI_ID_CHECK2:
-      case GUI_ID_CHECK3:
-      case GUI_ID_CHECK4:
-      case GUI_ID_CHECK5:
-        //
-        // Toggle border
-        //
-        hItem = WM_GetDialogItem(hDlg, GUI_ID_GRAPH0);
-        GRAPH_SetBorder(hItem,
-                        CHECKBOX_IsChecked(WM_GetDialogItem(hDlg, GUI_ID_CHECK2)) * 40,
-                        CHECKBOX_IsChecked(WM_GetDialogItem(hDlg, GUI_ID_CHECK3)) * 5,
-                        CHECKBOX_IsChecked(WM_GetDialogItem(hDlg, GUI_ID_CHECK4)) * 5,
-                        CHECKBOX_IsChecked(WM_GetDialogItem(hDlg, GUI_ID_CHECK5)) * 5);
-        break;
-      case GUI_ID_SLIDER0:
-        //
-        // Set horizontal grid spacing
-        //
-        hItem = WM_GetDialogItem(hDlg, GUI_ID_GRAPH0);
-        Value = SLIDER_GetValue(pMsg->hWinSrc) * 10;
-        GRAPH_SetGridDistX(hItem, Value);
-        GRAPH_SCALE_SetTickDist(_hScaleH, Value);
-        break;
-      case GUI_ID_SLIDER1:
-        //
-        // Set vertical grid spacing
-        //
-        hItem = WM_GetDialogItem(hDlg, GUI_ID_GRAPH0);
-        Value = SLIDER_GetValue(pMsg->hWinSrc) * 5;
-        GRAPH_SetGridDistY(hItem, Value);
-        GRAPH_SCALE_SetTickDist(_hScaleV, Value);
-        break;
-      case GUI_ID_RADIO0:
-        //
-        // Set the widget effect
-        //
-        hItem = WM_GetDialogItem(hDlg, GUI_ID_GRAPH0);
-        switch (RADIO_GetValue(pMsg->hWinSrc)) {
-        case 0:
-          WIDGET_SetEffect(hItem, &WIDGET_Effect_3D);
-          break;
-        case 1:
-          WIDGET_SetEffect(hItem, &WIDGET_Effect_Simple);
-          break;
-        case 2:
-          WIDGET_SetEffect(hItem, &WIDGET_Effect_None);
-          break;
-        }
-        break;
       case GUI_ID_CHECK6:
         //
         // Toggle horizontal scroll bar
@@ -472,21 +382,6 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
           GRAPH_SetVSizeY(hItem, 300);
         } else {
           GRAPH_SetVSizeY(hItem, 0);
-        }
-        break;
-      case GUI_ID_CHECK8:
-        //
-        // Toggle alignment
-        //
-        WM_GetDialogItem(hDlg, GUI_ID_GRAPH0);
-        for (i = 0; i < GUI_COUNTOF(_aColor); i++) {
-          if (CHECKBOX_IsChecked(WM_GetDialogItem(hDlg, GUI_ID_CHECK8))) {
-            GRAPH_DATA_YT_SetAlign(_ahData[i], GRAPH_ALIGN_LEFT);
-            GRAPH_DATA_YT_MirrorX (_ahData[i], 1);
-          } else {
-            GRAPH_DATA_YT_SetAlign(_ahData[i], GRAPH_ALIGN_RIGHT);
-            GRAPH_DATA_YT_MirrorX (_ahData[i], 0);
-          }
         }
         break;
       }

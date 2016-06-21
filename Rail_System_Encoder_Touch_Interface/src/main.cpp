@@ -36,9 +36,10 @@
  ******************************************************************************
  */
 
+//#define ARM_MATH_CM7
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
+#include "arm_math.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -51,20 +52,19 @@ Encoder encoder;
 float motorSpeed, motorRevolutions, motorDistance;
 int32_t encoderCount;
 
-float kp = 1.0f;
-float ki = 0.0f;
-float kd = 0.0f;
-float desiredSpeed = 5.0f;
+float kp = 8.0f;
+float ki = 0.025f;
+float kd = 0.025f;
+float desiredSpeed = 20.0f;
 int16_t duty_cycle;
-int16_t pwm = 50;
+int16_t pwm = 0;
 float speedError;
 float cutOff_frequency = 50.0f;
 
 
 Motor motor;
-DerivativeFilter speedFilter(0.001, cutOff_frequency, 0.707);
-Pid pidSpeed(kp, ki, kd, -30.0f, 30.0f, -100.0f, 100.0f);
 
+arm_pid_instance_f32 PID;
 TIM_OC_InitTypeDef sConfig;
 
 /* Private function prototypes -----------------------------------------------*/
@@ -97,6 +97,13 @@ int main(void) {
 
 	/* Configure LED1 */
 	BSP_LED_Init(LED1);
+
+	PID.Kp = kp;
+	PID.Ki = ki;
+	PID.Kd = kd;
+
+	arm_pid_init_f32(&PID,1);
+
 
 	/***********************************************************/
 
@@ -133,12 +140,16 @@ int main(void) {
 
 	// Enable GPIO Ports
 	__HAL_RCC_GPIOG_CLK_ENABLE();
+	__HAL_RCC_GPIOB_CLK_ENABLE();
 
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
 	GPIO_InitStruct.Pin = GPIO_PIN_6;
 	HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+	GPIO_InitStruct.Pin = GPIO_PIN_4;
+	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
 
 	/***********************************************************/
 
@@ -155,11 +166,8 @@ int main(void) {
 	while (1) {
 		// Starts the MainTask() Function which is in an External .c file
 		MainTask();
-
 	}
-
 }
-
 /**
  * @brief  Period elapsed callback in non blocking mode
  * @param  htim: TIM handle
@@ -167,39 +175,32 @@ int main(void) {
  */
 
 
-
+DerivativeFilter speedFilter(0.001, cutOff_frequency, 0.707f);
 
 static int dir;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
+
+
 	TouchUpdate();
-	encoderCount = encoder.read();
 	dir = encoder.direction();
+	encoderCount = encoder.read();
 
 	motorRevolutions = ((float)encoderCount / Pulses_Per_Revolution / Motor_Gear_Ratio);
 
-	motorDistance = motorRevolutions * 3.145f * 1.019f;
+	motorDistance = motorRevolutions * 3.145f * 1.019f / 39.37f * 100.0f * 2.0f;
 
 	motorSpeed = speedFilter.calculate(motorDistance);
 
 	speedError = desiredSpeed - motorSpeed;
 
-	duty_cycle = pidSpeed.calculate(speedError, 0.001);
+	duty_cycle = arm_pid_f32(&PID, speedError);
 
+	if(duty_cycle < -100)duty_cycle = -100;
+	if(duty_cycle > 100)duty_cycle = 100;
 
-/*	if (pwm < 0)
-	{
+	motor.dutyCycle(duty_cycle);
 
-		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_SET);
-		motor.dutyCycle(abs(pwm));
-	}
-	else
-	{
-		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_RESET);
-		motor.dutyCycle(pwm);
-	}*/
-
-	motor.dutyCycle(pwm);
 }
 
 /**

@@ -39,6 +39,8 @@
 #ifndef __MAIN_H
 #define __MAIN_H
 
+
+
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f7xx_hal.h"
 #include "GUI.h"
@@ -57,6 +59,9 @@
 #include "Derivative_Filter.h"
 #include "pid.h"
 #include "stdlib.h"
+
+
+
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/

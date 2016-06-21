@@ -359,7 +359,7 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
       case GUI_ID_BUTTON1:
 
 //    	  motor.dutyCycle((int)duty_cycle);
-    	  HAL_GPIO_WritePin(GPIOG,GPIO_PIN_6,GPIO_PIN_SET);
+
     	break;
       case GUI_ID_BUTTON2:
 //    	  motor.dutyCycle(0);
@@ -367,7 +367,24 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
       case GUI_ID_BUTTON3:
 //    	  desiredSpeed = desiredSpeed * -1;
 //    	  HAL_GPIO_TogglePin(GPIOG,GPIO_PIN_6);
-    	  HAL_GPIO_WritePin(GPIOG,GPIO_PIN_6,GPIO_PIN_RESET);
+/*				if ((HAL_GPIO_ReadPin(GPIOG, GPIO_PIN_6) == GPIO_PIN_RESET) && HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_4) == GPIO_PIN_SET)
+				{
+					HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_SET);
+					HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
+				}
+				else if ((HAL_GPIO_ReadPin(GPIOG, GPIO_PIN_6) == GPIO_PIN_SET) && HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_4) == GPIO_PIN_RESET)
+				{
+					HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_RESET);
+					HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);
+				}*/
+/*    		if (encoder.direction())
+    		{
+    			setSpeed = -desiredSpeed;
+    		}
+    		else
+    		{
+    			setSpeed = desiredSpeed;
+    		}*/
     	  break;
       }
       break;

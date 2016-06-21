@@ -68,20 +68,18 @@ void Motor::stop(void)
 
 void Motor::dutyCycle(int16_t duty)
 {
-/*
 	if(duty < 0){
-		sMotorConfig.Pulse = -1 * duty;
+		sMotorConfig.Pulse = abs(duty);
 		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);
 	}
-
-	else{
+	else
+	{	/* Set the pulse value for channel 1 */
 		sMotorConfig.Pulse = duty;
 		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
 	}
-*/
 
-	/* Set the pulse value for channel 1 */
-	sMotorConfig.Pulse = duty;
 	if (HAL_TIM_PWM_ConfigChannel(&TIM_HANDLE_, &sMotorConfig, TIM_CHANNEL_1) != HAL_OK)
 	{
 	/* Configuration Error */

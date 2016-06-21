@@ -59,7 +59,6 @@ static int _Stop = 0;
 
 static GUI_COLOR _aColor[] = {GUI_RED, GUI_GREEN, GUI_LIGHTBLUE}; // Array of colors for the GRAPH_DATA objects
 
-//Motor motor;
 
 
 //
@@ -90,6 +89,8 @@ static const GUI_WIDGET_CREATE_INFO _aDialogCreate[] = {
   { TEXT_CreateIndirect,      "encoderCount",      0                ,  350, 140,  50,  20 },
   { TEXT_CreateIndirect,      "motorRevolutions",  0                ,  350, 170,  50,  20 },
   { TEXT_CreateIndirect,      "speedError",        0                ,  350, 200,  50,  20 },
+  { SPINBOX_CreateIndirect,  NULL,                GUI_ID_SPINBOX0	, 	10, 180,  80,  50, 0, 0, 0 },
+  { SLIDER_CreateIndirect,    0,                   GUI_ID_SLIDER0   ,  280,  10,  30,  180, 8, 0x0, 0},
 
 
 
@@ -222,7 +223,6 @@ static void _ToggleFullScreenMode(WM_HWIN hDlg) {
     GRAPH_SCALE_SetPos(_hScaleH, ScalePos);
   }
 }
-
 /*********************************************************************
 *
 *       _cbCallback
@@ -234,12 +234,24 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
   unsigned i;
   int      NCode;
   int      Id;
+  int      Value;
   WM_HWIN  hDlg;
   WM_HWIN  hItem;
+  EDIT_Handle hEdit;
 
   hDlg = pMsg->hWin;
   switch (pMsg->MsgId) {
   case WM_INIT_DIALOG:
+
+	//
+	// Init spinbox widgets
+	//
+	hItem = WM_GetDialogItem(pMsg->hWin, GUI_ID_SPINBOX0);
+	SPINBOX_SetSkin(hItem, SPINBOX_SKIN_FLEX);
+	hEdit = SPINBOX_GetEditHandle(hItem);
+	EDIT_SetDecMode(hEdit, 30, 0, 150, 0, 0);
+	SPINBOX_SetEditMode(hItem, SPINBOX_EM_EDIT);
+	SPINBOX_SetRange(hItem, 0, 100);
 	//
 	// Init edit widgets
 	//
@@ -301,6 +313,13 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
     hItem = WM_GetDialogItem(hDlg, GUI_ID_CHECK7);
     CHECKBOX_SetText(hItem, "VScroll");
     //
+    // Init slider widgets
+    //
+    hItem = WM_GetDialogItem(hDlg, GUI_ID_SLIDER0);
+    SLIDER_SetRange(hItem, 0, 150);
+    SLIDER_SetValue(hItem, 50);
+    SLIDER_SetNumTicks(hItem, 30);
+    //
     // Init button widget
     //
     hItem = WM_GetDialogItem(hDlg, GUI_ID_BUTTON0);
@@ -315,35 +334,18 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
       case GUI_ID_BUTTON0:
         _ToggleFullScreenMode(hDlg);
         break;
-      case GUI_ID_BUTTON1:
-
-//    	  motor.dutyCycle((int)duty_cycle);
-
+      case GUI_ID_BUTTON1:			// Start button
+//    	  desiredSpeed = 30.0f;
+    	  motorEnable = true;
     	break;
-      case GUI_ID_BUTTON2:
-//    	  motor.dutyCycle(0);
+      case GUI_ID_BUTTON2:			// Stop button
+    	  motorEnable = false;
     	  break;
-      case GUI_ID_BUTTON3:
-//    	  desiredSpeed = desiredSpeed * -1;
-//    	  HAL_GPIO_TogglePin(GPIOG,GPIO_PIN_6);
-/*				if ((HAL_GPIO_ReadPin(GPIOG, GPIO_PIN_6) == GPIO_PIN_RESET) && HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_4) == GPIO_PIN_SET)
-				{
-					HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_SET);
-					HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
-				}
-				else if ((HAL_GPIO_ReadPin(GPIOG, GPIO_PIN_6) == GPIO_PIN_SET) && HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_4) == GPIO_PIN_RESET)
-				{
-					HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_RESET);
-					HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);
-				}*/
-/*    		if (encoder.direction())
-    		{
-    			setSpeed = -desiredSpeed;
-    		}
-    		else
-    		{
-    			setSpeed = desiredSpeed;
-    		}*/
+      case GUI_ID_BUTTON3:			// Direction button
+    	  motorEnable = false;
+    		if (desiredSpeed < 0) desiredSpeed = abs(desiredSpeed);
+    		if (desiredSpeed > 0) desiredSpeed = -desiredSpeed;
+    	  motorEnable = true;
     	  break;
       }
       break;
@@ -367,9 +369,12 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
         // Toggle horizontal scroll bar
         //
         hItem = WM_GetDialogItem(hDlg, GUI_ID_GRAPH0);
-        if (CHECKBOX_IsChecked(WM_GetDialogItem(hDlg, GUI_ID_CHECK6))) {
+        if (CHECKBOX_IsChecked(WM_GetDialogItem(hDlg, GUI_ID_CHECK6)))
+        {
           GRAPH_SetVSizeX(hItem, 500);
-        } else {
+        }
+        else
+        {
           GRAPH_SetVSizeX(hItem, 0);
         }
         break;
@@ -378,12 +383,27 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
         // Toggle vertical scroll bar
         //
         hItem = WM_GetDialogItem(hDlg, GUI_ID_GRAPH0);
-        if (CHECKBOX_IsChecked(WM_GetDialogItem(hDlg, GUI_ID_CHECK7))) {
+        if (CHECKBOX_IsChecked(WM_GetDialogItem(hDlg, GUI_ID_CHECK7)))
+        {
           GRAPH_SetVSizeY(hItem, 300);
-        } else {
+        }
+        else
+        {
           GRAPH_SetVSizeY(hItem, 0);
         }
         break;
+      case GUI_ID_SLIDER0:
+        //
+        // Set horizontal grid spacing
+        //
+        hItem = WM_GetDialogItem(hDlg, GUI_ID_GRAPH0);
+        desiredSpeed = SLIDER_GetValue(pMsg->hWinSrc);
+
+        break;
+      case GUI_ID_SPINBOX0:
+          hItem = WM_GetDialogItem(pMsg->hWin, GUI_ID_SPINBOX0);
+          desiredSpeed = (float)SPINBOX_GetValue(pMsg->hWinSrc);
+          break;
       }
       break;
     }

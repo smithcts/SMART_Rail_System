@@ -48,14 +48,14 @@
 
 TIM_HandleTypeDef TimHandle;
 Encoder encoder;
-
+bool motorEnable = false;
 float motorSpeed, motorRevolutions, motorDistance;
 int32_t encoderCount;
 
-float kp = 8.0f;
+float kp = 5.0f;
 float ki = 0.025f;
 float kd = 0.025f;
-float desiredSpeed = 20.0f;
+float desiredSpeed = 0.0f;
 int16_t duty_cycle;
 int16_t pwm = 0;
 float speedError;
@@ -192,14 +192,21 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
 	motorSpeed = speedFilter.calculate(motorDistance);
 
-	speedError = desiredSpeed - motorSpeed;
-
-	duty_cycle = arm_pid_f32(&PID, speedError);
+	if(motorEnable)
+	{
+		speedError = desiredSpeed - motorSpeed;
+		duty_cycle = arm_pid_f32(&PID, speedError);
+	}
+	else
+	{
+		duty_cycle = 0;
+	}
 
 	if(duty_cycle < -100)duty_cycle = -100;
 	if(duty_cycle > 100)duty_cycle = 100;
 
 	motor.dutyCycle(duty_cycle);
+
 
 }
 

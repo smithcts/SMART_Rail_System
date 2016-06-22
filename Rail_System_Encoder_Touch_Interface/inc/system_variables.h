@@ -10,6 +10,8 @@
 
 extern const float Motor_Gear_Ratio;
 extern const float Pulses_Per_Revolution;
+extern const float Belt_Pully_Diameter;
+extern const float Inches_Per_Meter;
 
 
 

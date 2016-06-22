@@ -13,17 +13,27 @@ class Encoder
 	public:
 		Encoder(void);
 
-		int32_t read(void);
+		int32_t getCount(void);
+		void setCount(int32_t count32);
 
-		int16_t direction(void);
+		int16_t getDirection(void);
 
-		void set(int32_t count32);
+		float getRevolution(void);
+
+		float getDistance(void);
+
+		float getSpeed(void);
+		void setSpeed(float inputSpeed);
+
+		float getSpeedCommand(void);
+		void setSpeedCommand(float inputSpeedCommand);
 
 		void Error_Handler(void);
-
 	private:
 		uint16_t prev_counter_;
 		int16_t overflows_;
+		float speed_;
+		float speedCommand_;
 };
 
 

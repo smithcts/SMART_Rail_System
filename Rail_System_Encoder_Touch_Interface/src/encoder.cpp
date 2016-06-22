@@ -17,8 +17,6 @@ Encoder::Encoder(void)
 {
 	prev_counter_ = 0;
 	overflows_ = 0;
-
-
 	  /* -1- Initialize TIM1 to handle the encoder sensor */
 	  /* Initialize TIM1 peripheral as follows:
 	       + Period = 65535
@@ -57,7 +55,7 @@ Encoder::Encoder(void)
 
 }
 
-int32_t Encoder::read(void)
+int32_t Encoder::getCount(void)
 {
 	    uint16_t counter; // 16 bit counter of timer
 	    int32_t count32;  // 32 bit counter which accounts for timer overflows
@@ -83,17 +81,16 @@ int32_t Encoder::read(void)
 	    return count32;
 }
 
-int16_t Encoder::direction(void)
+int16_t Encoder::getDirection(void)
 {
 	/* Get the current direction */
 	bool direction;
 	direction =__HAL_TIM_IS_TIM_COUNTING_DOWN(&Encoder_Handle);
 	return direction;
-
 }
 
 //*****************************************************************************
-void Encoder::set(int32_t count32)
+void Encoder::setCount(int32_t count32)
 {
     if (count32 < 0)
     {
@@ -108,8 +105,31 @@ void Encoder::set(int32_t count32)
     prev_counter_ = counter;
 
     __HAL_TIM_SET_COUNTER(&Encoder_Handle, counter);
+}
 
-
+float Encoder::getSpeed(void)
+{
+	return speed_;
+}
+void Encoder::setSpeed(float inputSpeed)
+{
+	speed_ = inputSpeed;
+}
+float Encoder::getSpeedCommand(void)
+{
+	return speedCommand_;
+}
+void Encoder::setSpeedCommand(float inputSpeedCommand)
+{
+	speedCommand_ = inputSpeedCommand;
+}
+float Encoder::getDistance(void)
+{
+	return(getRevolution() * 3.145f * Belt_Pully_Diameter / Inches_Per_Meter * 100.0f * 2.0f);
+}
+float Encoder::getRevolution(void)
+{
+	return(((float)getCount() / Pulses_Per_Revolution / Motor_Gear_Ratio));
 }
 
 void Encoder::Error_Handler(void)

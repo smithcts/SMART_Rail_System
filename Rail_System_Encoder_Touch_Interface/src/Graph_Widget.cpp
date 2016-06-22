@@ -59,7 +59,8 @@ static int _Stop = 0;
 
 static GUI_COLOR _aColor[] = {GUI_RED, GUI_GREEN, GUI_LIGHTBLUE}; // Array of colors for the GRAPH_DATA objects
 
-
+extern Motor motor;
+extern Encoder encoder;
 
 //
 // Dialog ressource
@@ -82,13 +83,13 @@ static const GUI_WIDGET_CREATE_INFO _aDialogCreate[] = {
   { EDIT_CreateIndirect,	 0, 	   			   GUI_ID_EDIT4		, 410,  140,  45,  20 },
   { EDIT_CreateIndirect,	 0, 	   			   GUI_ID_EDIT5		, 410,  170,  45,  20 },
   { EDIT_CreateIndirect,	 0, 	   			   GUI_ID_EDIT6		, 410,  200,  45,  20 },
-  { TEXT_CreateIndirect,      "motorSpeed",        0                ,  350, 20,  50,  20 },
-  { TEXT_CreateIndirect,      "duty_cycle",        0                ,  350, 50,  50,  20 },
-  { TEXT_CreateIndirect,      "wheelSpeed",        0                ,  350, 80,  50,  20 },
-  { TEXT_CreateIndirect,      "motorDistance",     0                ,  350, 110,  50,  20 },
-  { TEXT_CreateIndirect,      "encoderCount",      0                ,  350, 140,  50,  20 },
-  { TEXT_CreateIndirect,      "motorRevolutions",  0                ,  350, 170,  50,  20 },
-  { TEXT_CreateIndirect,      "speedError",        0                ,  350, 200,  50,  20 },
+  { TEXT_CreateIndirect,      "motorSpeed",        0                ,  340, 20,  50,  20 },
+  { TEXT_CreateIndirect,      "duty_cycle",        0                ,  340, 50,  50,  20 },
+  { TEXT_CreateIndirect,      "speedCommand",      0                ,  340, 80,  50,  20 },
+  { TEXT_CreateIndirect,      "motorDistance",     0                ,  340, 110,  50,  20 },
+  { TEXT_CreateIndirect,      "encoderCount",      0                ,  340, 140,  50,  20 },
+  { TEXT_CreateIndirect,      "motorRevolutions",  0                ,  340, 170,  50,  20 },
+  { TEXT_CreateIndirect,      "speedError",        0                ,  340, 200,  50,  20 },
   { SPINBOX_CreateIndirect,  NULL,                GUI_ID_SPINBOX0	, 	10, 180,  80,  50, 0, 0, 0 },
   { SLIDER_CreateIndirect,    0,                   GUI_ID_SLIDER0   ,  280,  10,  30,  180, 8, 0x0, 0},
 
@@ -114,9 +115,9 @@ static void _AddValues(void) {
   unsigned i;
 
   for (i = 0; i < GUI_COUNTOF(_aColor); i++) {
-    _aValue[0] = speedError;
-    _aValue[1] = motorSpeed + 50;
-    _aValue[2] = duty_cycle;
+    _aValue[0] = encoder.getSpeedCommand() - encoder.getSpeed();
+    _aValue[1] = encoder.getSpeed() + 50;
+    _aValue[2] = motor.getDuty();
     if (_aValue[i] > MAX_VALUE) {
       _aValue[i] = MAX_VALUE;
     } else if (_aValue[i] < -MAX_VALUE) {
@@ -343,8 +344,7 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
     	  break;
       case GUI_ID_BUTTON3:			// Direction button
     	  motorEnable = false;
-    		if (desiredSpeed < 0) desiredSpeed = abs(desiredSpeed);
-    		if (desiredSpeed > 0) desiredSpeed = -desiredSpeed;
+
     	  motorEnable = true;
     	  break;
       }
@@ -397,12 +397,12 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
         // Set horizontal grid spacing
         //
         hItem = WM_GetDialogItem(hDlg, GUI_ID_GRAPH0);
-        desiredSpeed = SLIDER_GetValue(pMsg->hWinSrc);
+        encoder.setSpeedCommand(SLIDER_GetValue(pMsg->hWinSrc));
 
         break;
       case GUI_ID_SPINBOX0:
           hItem = WM_GetDialogItem(pMsg->hWin, GUI_ID_SPINBOX0);
-          desiredSpeed = (float)SPINBOX_GetValue(pMsg->hWinSrc);
+          encoder.setSpeedCommand(SPINBOX_GetValue(pMsg->hWinSrc));
           break;
       }
       break;
@@ -452,25 +452,25 @@ void MainTask(void) {
         hGraph = WM_GetDialogItem(hDlg, GUI_ID_GRAPH0);
       }
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT0);
-      EDIT_SetFloatValue(hItem, motorSpeed);
+      EDIT_SetFloatValue(hItem, encoder.getSpeed());
 
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT1);
-      EDIT_SetFloatValue(hItem, (float)duty_cycle);
+      EDIT_SetFloatValue(hItem, motor.getDuty());
 
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT2);
-      EDIT_SetFloatValue(hItem, desiredSpeed);
+      EDIT_SetFloatValue(hItem, encoder.getSpeedCommand());
 
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT3);
-      EDIT_SetFloatValue(hItem, motorDistance);
+      EDIT_SetFloatValue(hItem, encoder.getDistance());
 
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT4);
-      EDIT_SetValue(hItem, encoderCount);
+      EDIT_SetValue(hItem, encoder.getCount());
 
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT5);
-      EDIT_SetFloatValue(hItem, motorRevolutions);
+      EDIT_SetFloatValue(hItem, encoder.getRevolution());
 
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT6);
-      EDIT_SetFloatValue(hItem, speedError);
+      EDIT_SetFloatValue(hItem, encoder.getSpeedCommand() - encoder.getSpeed());
       _AddValues();
     }
     GUI_Exec();

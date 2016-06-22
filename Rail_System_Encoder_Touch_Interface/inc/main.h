@@ -68,13 +68,6 @@
 
 #endif /* __MAIN_H */
 
-extern float kp, ki, kd;
-extern float motorSpeed, motorRevolutions, motorDistance, speedCommand, speedError, desiredSpeed, cutOff_frequency;
-extern int32_t encoderCount;
-extern int16_t duty_cycle, pwm;
 extern bool motorEnable;
 
-void ExecSetup(void);
-void ExecAbout(void);
-void ExecCalibration(void);
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

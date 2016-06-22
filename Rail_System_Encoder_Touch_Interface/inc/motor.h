@@ -20,12 +20,16 @@ public:
 
 	void stop(void);
 
-	void dutyCycle(int16_t duty);
+	void setDuty(int16_t inputDuty);
+
+	int16_t getDuty(void);
 
 	void Error_Handler(void);
 
 private:
 	int16_t duty_;
+	int16_t prescaler_;
+	int16_t period_;
 	TIM_HandleTypeDef TIM_HANDLE_;
 };
 

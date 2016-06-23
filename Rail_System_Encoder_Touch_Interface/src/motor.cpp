@@ -48,10 +48,8 @@ void Motor::start(void)
 
 void Motor::stop(void)
 {
-	/*##-3- Start PWM signals generation #######################################*/
-	/* Start channel 1 */
-	HAL_TIM_PWM_Stop(&TIM_HANDLE_, TIM_CHANNEL_1);
-
+	HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
 }
 
 void Motor::setDuty(int16_t dutyInput)

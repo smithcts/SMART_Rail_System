@@ -164,25 +164,18 @@ int main(void) {
 DerivativeFilter speedFilter(0.001, 50.0f, 0.707f);
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-	float duty_cycle;
 	TouchUpdate();
-//	motorRevolutions = ((float)encoderCount / Pulses_Per_Revolution / Motor_Gear_Ratio);
-
-//	motorDistance = motorRevolutions * 3.145f * 1.019f / 39.37f * 100.0f * 2.0f;
 
 	encoder.setSpeed(speedFilter.calculate(encoder.getDistance()));
 
 	if(motorEnable)
 	{
-		duty_cycle = arm_pid_f32(&PID, encoder.getSpeedCommand() - encoder.getSpeed());
+		motor.setDuty(arm_pid_f32(&PID, encoder.getSpeedCommand() - encoder.getSpeed()));
 	}
 	else
 	{
-		duty_cycle = 0;
+		motor.setDuty(0);
 	}
-
-
-	motor.setDuty(duty_cycle);
 }
 
 /**

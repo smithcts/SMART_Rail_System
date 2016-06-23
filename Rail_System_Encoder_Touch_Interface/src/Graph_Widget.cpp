@@ -340,12 +340,11 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
     	  motorEnable = true;
     	break;
       case GUI_ID_BUTTON2:			// Stop button
+    	  motor.stop();
     	  motorEnable = false;
     	  break;
       case GUI_ID_BUTTON3:			// Direction button
-    	  motorEnable = false;
 
-    	  motorEnable = true;
     	  break;
       }
       break;

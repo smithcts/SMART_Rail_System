@@ -235,7 +235,6 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
   unsigned i;
   int      NCode;
   int      Id;
-  int      Value;
   WM_HWIN  hDlg;
   WM_HWIN  hItem;
   EDIT_Handle hEdit;
@@ -336,15 +335,18 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
         _ToggleFullScreenMode(hDlg);
         break;
       case GUI_ID_BUTTON1:			// Start button
-//    	  desiredSpeed = 30.0f;
-    	  motorEnable = true;
+    	  motor.setEnable(true);
     	break;
       case GUI_ID_BUTTON2:			// Stop button
-    	  motor.stop();
-    	  motorEnable = false;
+    	  motor.setEnable(false);
     	  break;
       case GUI_ID_BUTTON3:			// Direction button
-
+    	  motor.setEnable(false);
+    	  if (encoder.getSpeedCommand() < 0)
+    		 encoder.setSpeedCommand(abs(encoder.getSpeedCommand()));
+    	  else if (encoder.getSpeedCommand() > 0)
+    		 encoder.setSpeedCommand(-encoder.getSpeedCommand());
+    	  motor.setEnable(true);
     	  break;
       }
       break;

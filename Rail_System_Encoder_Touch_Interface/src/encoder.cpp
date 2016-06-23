@@ -15,6 +15,7 @@
 
 Encoder::Encoder(void)
 {
+	speedCommand_ = 0;
 	prev_counter_ = 0;
 	overflows_ = 0;
 	  /* -1- Initialize TIM1 to handle the encoder sensor */

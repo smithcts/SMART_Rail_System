@@ -9,6 +9,7 @@ TIM_OC_InitTypeDef sMotorConfig;
 Motor::Motor(void)
 {
 		duty_ = 0;
+		enable_ = false;
 		prescaler_ = 99;
 		period_ = 99;
 		TIM_HANDLE_ = TimHandle_TIM1;
@@ -38,14 +39,13 @@ Motor::Motor(void)
 		HAL_TIM_PWM_Start(&TIM_HANDLE_, TIM_CHANNEL_1);
 }
 
-void Motor::start(void)
-{
-	/*##-3- Start PWM signals generation #######################################*/
-	/* Start channel 1 */
-	HAL_TIM_PWM_Start(&TIM_HANDLE_, TIM_CHANNEL_1);
-
+void Motor::setEnable(bool enable) {
+	enable_ = enable;
 }
 
+bool Motor::getEnable(void){
+	return enable_;
+}
 void Motor::stop(void)
 {
 	HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_RESET);
@@ -54,28 +54,31 @@ void Motor::stop(void)
 
 void Motor::setDuty(int16_t dutyInput)
 {
-	duty_ = dutyInput;
-
+	// Overflow protection, duty cycle cannot exceed the period of the TIM clock
 	int16_t maxLimit = period_ + 1;
+	if (dutyInput < -maxLimit)
+		duty_ = -maxLimit;
+	else if (dutyInput > maxLimit)
+		duty_ = maxLimit;
+	else
+		duty_ = dutyInput;
 
-	if(duty_ < -maxLimit)duty_ = -maxLimit;
-	if(duty_ >  maxLimit)duty_ =  maxLimit;
-
-	if(dutyInput < 0){
-		sMotorConfig.Pulse = abs(duty_);
+	if (duty_ < 0) {
 		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);
-	}
-	else
-	{	/* Set the pulse value for channel 1 */
-		sMotorConfig.Pulse = duty_;
+	} else if (duty_ > 0) {
 		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
+	} else {
+		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
 	}
 
+	sMotorConfig.Pulse = abs(dutyInput);
+
 	HAL_TIM_PWM_ConfigChannel(&TIM_HANDLE_, &sMotorConfig, TIM_CHANNEL_1);
 
-	start();
+	HAL_TIM_PWM_Start(&TIM_HANDLE_, TIM_CHANNEL_1);
 }
 
 int16_t Motor::getDuty(void)

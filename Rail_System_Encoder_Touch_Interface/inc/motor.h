@@ -16,7 +16,9 @@ public:
 
 	int32_t read(void);
 
-	void start(void);
+	void setEnable(bool enable);
+
+	bool getEnable(void);
 
 	void stop(void);
 
@@ -30,6 +32,7 @@ private:
 	int16_t duty_;
 	int16_t prescaler_;
 	int16_t period_;
+	bool enable_;
 	TIM_HandleTypeDef TIM_HANDLE_;
 };
 

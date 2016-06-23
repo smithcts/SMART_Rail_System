@@ -165,17 +165,15 @@ DerivativeFilter speedFilter(0.001, 50.0f, 0.707f);
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	TouchUpdate();
+	static float speedError;
 
 	encoder.setSpeed(speedFilter.calculate(encoder.getDistance()));
 
-	if(motorEnable)
-	{
-		motor.setDuty(arm_pid_f32(&PID, encoder.getSpeedCommand() - encoder.getSpeed()));
-	}
-	else
-	{
+	if (motor.getEnable()) {
+		speedError = encoder.getSpeedCommand() - encoder.getSpeed();
+		motor.setDuty(arm_pid_f32(&PID, speedError));
+	} else
 		motor.setDuty(0);
-	}
 }
 
 /**

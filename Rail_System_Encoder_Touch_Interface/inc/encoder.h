@@ -16,7 +16,8 @@ class Encoder
 		int32_t getCount(void);
 		void setCount(int32_t count32);
 
-		int16_t getDirection(void);
+		bool getDirection(void);
+		void setDirection(bool inputDirection);
 
 		float getRevolution(void);
 
@@ -34,6 +35,7 @@ class Encoder
 		int16_t overflows_;
 		float speed_;
 		float speedCommand_;
+		bool direction_;
 };
 
 

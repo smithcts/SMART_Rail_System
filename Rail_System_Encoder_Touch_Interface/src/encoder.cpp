@@ -82,14 +82,17 @@ int32_t Encoder::getCount(void)
 	    return count32;
 }
 
-int16_t Encoder::getDirection(void)
-{
-	/* Get the current direction */
-	bool direction;
-	direction =__HAL_TIM_IS_TIM_COUNTING_DOWN(&Encoder_Handle);
-	return direction;
+bool Encoder::getDirection(void) {
+	return (__HAL_TIM_IS_TIM_COUNTING_DOWN(&Encoder_Handle));
 }
+void Encoder::setDirection(bool inputDirection) {
+	direction_ = inputDirection;
 
+	if (direction_)
+		setSpeedCommand(-getSpeedCommand());
+	else
+		setSpeedCommand(abs(getSpeedCommand()));
+}
 //*****************************************************************************
 void Encoder::setCount(int32_t count32)
 {
@@ -126,7 +129,7 @@ void Encoder::setSpeedCommand(float inputSpeedCommand)
 }
 float Encoder::getDistance(void)
 {
-	return(getRevolution() * 3.145f * Belt_Pully_Diameter / Inches_Per_Meter * 100.0f * 2.0f);
+	return(getRevolution() * 3.145f * Belt_Pully_Diameter / Inches_Per_Meter * 100.0f * 4.0f);
 }
 float Encoder::getRevolution(void)
 {

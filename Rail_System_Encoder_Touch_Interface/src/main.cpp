@@ -50,7 +50,7 @@ TIM_OC_InitTypeDef sConfig;
 #define kd  0.025f
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-bool motorEnable = false;
+
 
 Motor motor;
 Encoder encoder;
@@ -59,6 +59,8 @@ arm_pid_instance_f32 PID;
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
 extern void MainTask(void);
+static void EXTI15_10_IRQHandler_Config(void);
+static void EXTI9_5_IRQHandler_Config(void);
 /* Private functions ---------------------------------------------------------*/
 
 /**
@@ -91,6 +93,8 @@ int main(void) {
 
 	arm_pid_init_f32(&PID,1);
 
+	EXTI15_10_IRQHandler_Config();
+	EXTI9_5_IRQHandler_Config();
 
 	/***********************************************************/
 	//This timer(TIM3) is used as an interupt to refresh the touchscreen
@@ -175,7 +179,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	} else
 		motor.setDuty(0);
 }
-
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+	if (encoder.getDirection() && HAL_GPIO_ReadPin(GPIOF,GPIO_PIN_9)){
+		motor.setEnable(false);
+	}
+	else if (HAL_GPIO_ReadPin(GPIOF,GPIO_PIN_10)){
+		motor.setEnable(false);
+	}
+}
 /**
  * @brief  System Clock Configuration
  *         The system Clock is configured as follow :
@@ -241,7 +252,41 @@ static void SystemClock_Config(void) {
 		}
 	}
 }
+static void EXTI15_10_IRQHandler_Config(void)
+{
+  GPIO_InitTypeDef   GPIO_InitStructure;
 
+  /* Enable GPIOC clock */
+  __HAL_RCC_GPIOF_CLK_ENABLE();
+
+  /* Configure PC.13 pin as input floating */
+  GPIO_InitStructure.Mode = GPIO_MODE_IT_RISING_FALLING;
+  GPIO_InitStructure.Pull = GPIO_PULLDOWN;
+  GPIO_InitStructure.Pin = GPIO_PIN_10;
+  HAL_GPIO_Init(GPIOF, &GPIO_InitStructure);
+
+  /* Enable and set EXTI lines 15 to 10 Interrupt to the lowest priority */
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 2, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+}
+
+static void EXTI9_5_IRQHandler_Config(void)
+{
+  GPIO_InitTypeDef   GPIO_InitStructure;
+
+  /* Enable GPIOC clock */
+  __HAL_RCC_GPIOF_CLK_ENABLE();
+
+  /* Configure PC.13 pin as input floating */
+  GPIO_InitStructure.Mode = GPIO_MODE_IT_RISING_FALLING;
+  GPIO_InitStructure.Pull = GPIO_PULLDOWN;
+  GPIO_InitStructure.Pin = GPIO_PIN_9;
+  HAL_GPIO_Init(GPIOF, &GPIO_InitStructure);
+
+  /* Enable and set EXTI lines 15 to 10 Interrupt to the lowest priority */
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 2, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+}
 #ifdef  USE_FULL_ASSERT
 /**
  * @brief  Reports the name of the source file and the source line number

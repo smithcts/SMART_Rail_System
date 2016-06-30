@@ -68,6 +68,6 @@
 
 #endif /* __MAIN_H */
 
-extern bool motorEnable;
+
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

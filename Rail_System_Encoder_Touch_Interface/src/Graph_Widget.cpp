@@ -91,7 +91,7 @@ static const GUI_WIDGET_CREATE_INFO _aDialogCreate[] = {
   { TEXT_CreateIndirect,      "motorRevolutions",  0                ,  340, 170,  50,  20 },
   { TEXT_CreateIndirect,      "speedError",        0                ,  340, 200,  50,  20 },
   { SPINBOX_CreateIndirect,  NULL,                GUI_ID_SPINBOX0	, 	10, 180,  80,  50, 0, 0, 0 },
-  { SLIDER_CreateIndirect,    0,                   GUI_ID_SLIDER0   ,  280,  10,  30,  180, 8, 0x0, 0},
+  { SLIDER_CreateIndirect,    0,                   GUI_ID_SLIDER0   ,  280,  10,  30,  160, 8, 0x0, 0},
 
 
 
@@ -316,7 +316,7 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
     // Init slider widgets
     //
     hItem = WM_GetDialogItem(hDlg, GUI_ID_SLIDER0);
-    SLIDER_SetRange(hItem, 0, 150);
+    SLIDER_SetRange(hItem, 0, 180);
     SLIDER_SetValue(hItem, 50);
     SLIDER_SetNumTicks(hItem, 30);
     //
@@ -342,11 +342,11 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
     	  break;
       case GUI_ID_BUTTON3:			// Direction button
     	  motor.setEnable(false);
-    	  if (encoder.getSpeedCommand() < 0)
-    		 encoder.setSpeedCommand(abs(encoder.getSpeedCommand()));
-    	  else if (encoder.getSpeedCommand() > 0)
-    		 encoder.setSpeedCommand(-encoder.getSpeedCommand());
-    	  motor.setEnable(true);
+				if (encoder.getDirection())
+					encoder.setDirection(false);
+				else if (!encoder.getDirection())
+					encoder.setDirection(true);
+		  motor.setEnable(true);
     	  break;
       }
       break;
@@ -470,8 +470,11 @@ void MainTask(void) {
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT5);
       EDIT_SetFloatValue(hItem, encoder.getRevolution());
 
+/*      hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT6);
+      EDIT_SetFloatValue(hItem, encoder.getSpeedCommand() - encoder.getSpeed());*/
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT6);
-      EDIT_SetFloatValue(hItem, encoder.getSpeedCommand() - encoder.getSpeed());
+      EDIT_SetFloatValue(hItem, (float)encoder.getDirection());
+
       _AddValues();
     }
     GUI_Exec();

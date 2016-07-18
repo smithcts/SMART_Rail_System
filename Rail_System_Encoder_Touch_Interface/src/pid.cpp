@@ -1,54 +1,29 @@
-// Includes
 #include "pid.h"
+#include "arm_math.h"
 
-//******************************************************************************
-Pid::Pid(float kp, float ki, float kd,
-                             float integral_lolimit, float integral_hilimit,
-                             float output_lolimit, float output_hilimit)
+PID::PID(void)
 {
-    // Initialize parameters and integral state.
-    kp_               = kp;
-    ki_               = ki;
-    kd_               = kd;
-    integral_lolimit_ = integral_lolimit;
-    integral_hilimit_ = integral_hilimit;
-    lolimit_          = output_lolimit;
-    hilimit_          = output_hilimit;
-    integral_         = 0.0f;
-    last_error_       = 0.0f;
+	arm_pid_instance_f32 PID;
+	PID.Kp = 0;
+	PID.Ki = 0;
+	PID.Kd = 0;
+	arm_pid_init_f32(&PID,1);
 }
 
-//******************************************************************************
-float Pid::calculate(float error, float derivative, float dt)
+float getPid(float error)
 {
-    // Update the integral state.  Multiply by the integral gain (ki) so that when we saturate the
-    // integral term below we can control the maximum effect the integral has on the total output.
-    integral_ += ki_ * error * dt;
-
-    // Saturate integral term to avoid windup.
-    if (integral_ < integral_lolimit_) { integral_ = integral_lolimit_; }
-    if (integral_ > integral_hilimit_) { integral_ = integral_hilimit_; }
-
-    float output = kp_*error + integral_ + kd_*derivative;
-
-    // Saturate output at limits.
-    if (output < lolimit_) { output = lolimit_; }
-    if (output > hilimit_) { output = hilimit_; }
-
-    // Save error in case we need it to calculate derivative.
-    last_error_ = error;
-
-    return output;
+	arm_pid_instance_f32 PID;
+	return (arm_pid_f32(&PID, error));
 }
 
-//******************************************************************************
-float Pid::calculate(float error, float dt)
+void setPid(float kp, float ki, float kd)
 {
-    if (dt == 0) { return 0; } // protect against division by zero
-
-    float derivative = (error - last_error_) / dt;
-
-    return calculate(error, derivative, dt);
+	arm_pid_instance_f32 PID;
+/*	kp_ = kp;
+	ki_ = ki;
+	kd_ = kd;
+	PID.Kp = KP;
+	PID.Ki = KI;
+	PID.Kd = KD;*/
 }
-
 

@@ -54,8 +54,11 @@ float TempPID;
 
 Motor motor;
 Encoder encoder;
+<<<<<<< HEAD
 arm_pid_instance_f32 PID;
 Pid pid(15.0f,0.0f,0.0f,-0.0,0.0,-100.0f,100.0f);
+=======
+>>>>>>> master
 
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
@@ -87,12 +90,6 @@ int main(void) {
 
 	/* Configure LED1 */
 	BSP_LED_Init(LED1);
-
-	PID.Kp = kp;
-	PID.Ki = ki;
-	PID.Kd = kd;
-
-	arm_pid_init_f32(&PID,1);
 
 	EXTI15_10_IRQHandler_Config();
 	EXTI9_5_IRQHandler_Config();
@@ -176,8 +173,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
 	if (motor.getEnable()) {
 		speedError = encoder.getSpeedCommand() - encoder.getSpeed();
+<<<<<<< HEAD
 		motor.setDuty(arm_pid_f32(&PID, speedError));
 		TempPID = pid.calculate(speedError,0.001f);
+=======
+//		motor.setDuty(arm_pid_f32(&PID, speedError));
+>>>>>>> master
 	} else
 		motor.setDuty(0);
 }

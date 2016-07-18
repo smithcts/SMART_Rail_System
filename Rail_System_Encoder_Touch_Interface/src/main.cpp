@@ -54,11 +54,10 @@ float TempPID;
 
 Motor motor;
 Encoder encoder;
-<<<<<<< HEAD
+
 arm_pid_instance_f32 PID;
 Pid pid(15.0f,0.0f,0.0f,-0.0,0.0,-100.0f,100.0f);
-=======
->>>>>>> master
+
 
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
@@ -173,12 +172,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
 	if (motor.getEnable()) {
 		speedError = encoder.getSpeedCommand() - encoder.getSpeed();
-<<<<<<< HEAD
+
 		motor.setDuty(arm_pid_f32(&PID, speedError));
 		TempPID = pid.calculate(speedError,0.001f);
-=======
+
 //		motor.setDuty(arm_pid_f32(&PID, speedError));
->>>>>>> master
+
 	} else
 		motor.setDuty(0);
 }

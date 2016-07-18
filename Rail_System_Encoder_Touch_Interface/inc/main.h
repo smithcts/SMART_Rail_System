@@ -60,7 +60,7 @@
 #include "pid.h"
 #include "stdlib.h"
 
-
+extern float TempPID;
 
 
 /* Exported types ------------------------------------------------------------*/

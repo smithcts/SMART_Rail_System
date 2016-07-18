@@ -45,16 +45,17 @@
 TIM_HandleTypeDef TimHandle;
 TIM_OC_InitTypeDef sConfig;
 /* Private define ------------------------------------------------------------*/
-#define kp  5.0f
-#define ki  0.025f
-#define kd  0.025f
+#define kp  0.50f
+#define ki  0.0f
+#define kd  0.0f
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-
+float TempPID;
 
 Motor motor;
 Encoder encoder;
 arm_pid_instance_f32 PID;
+Pid pid(15.0f,0.0f,0.0f,-0.0,0.0,-100.0f,100.0f);
 
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
@@ -176,6 +177,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	if (motor.getEnable()) {
 		speedError = encoder.getSpeedCommand() - encoder.getSpeed();
 		motor.setDuty(arm_pid_f32(&PID, speedError));
+		TempPID = pid.calculate(speedError,0.001f);
 	} else
 		motor.setDuty(0);
 }

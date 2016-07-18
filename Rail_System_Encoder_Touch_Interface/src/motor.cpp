@@ -52,6 +52,23 @@ void Motor::stop(void)
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
 }
 
+void Motor::setDirection(bool dir)
+{
+	dir_ = dir;
+	if (dir == true) {
+		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);
+	} else{
+		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
+	}
+}
+
+bool Motor::getDirection(void)
+{
+	return dir_;
+}
+
 void Motor::setDuty(int16_t dutyInput)
 {
 	// Overflow protection, duty cycle cannot exceed the period of the TIM clock
@@ -62,17 +79,6 @@ void Motor::setDuty(int16_t dutyInput)
 		duty_ = maxLimit;
 	else
 		duty_ = dutyInput;
-
-	if (duty_ < 0) {
-		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);
-	} else if (duty_ > 0) {
-		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
-	} else {
-		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
-	}
 
 	sMotorConfig.Pulse = abs(dutyInput);
 

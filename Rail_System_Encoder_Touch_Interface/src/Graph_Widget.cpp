@@ -473,7 +473,7 @@ void MainTask(void) {
 /*      hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT6);
       EDIT_SetFloatValue(hItem, encoder.getSpeedCommand() - encoder.getSpeed());*/
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT6);
-      EDIT_SetFloatValue(hItem, (float)encoder.getDirection());
+      EDIT_SetFloatValue(hItem, TempPID);
 
       _AddValues();
     }

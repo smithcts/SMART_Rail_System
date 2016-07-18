@@ -20,6 +20,10 @@ public:
 
 	bool getEnable(void);
 
+	void setDirection(bool dir);
+
+	bool getDirection(void);
+
 	void stop(void);
 
 	void setDuty(int16_t inputDuty);
@@ -33,6 +37,7 @@ private:
 	int16_t prescaler_;
 	int16_t period_;
 	bool enable_;
+	bool dir_;
 	TIM_HandleTypeDef TIM_HANDLE_;
 };
 

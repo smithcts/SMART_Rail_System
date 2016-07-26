@@ -61,6 +61,7 @@ static GUI_COLOR _aColor[] = {GUI_RED, GUI_GREEN, GUI_LIGHTBLUE}; // Array of co
 
 extern Motor motor;
 extern Encoder encoder;
+extern PidController pid;
 
 //
 // Dialog ressource
@@ -87,7 +88,7 @@ static const GUI_WIDGET_CREATE_INFO _aDialogCreate[] = {
   { TEXT_CreateIndirect,      "duty_cycle",        0                ,  340, 50,  50,  20 },
   { TEXT_CreateIndirect,      "speedCommand",      0                ,  340, 80,  50,  20 },
   { TEXT_CreateIndirect,      "motorDistance",     0                ,  340, 110,  50,  20 },
-  { TEXT_CreateIndirect,      "encoderCount",      0                ,  340, 140,  50,  20 },
+  { TEXT_CreateIndirect,      "PID Value",	       0                ,  340, 140,  50,  20 },
   { TEXT_CreateIndirect,      "motorRevolutions",  0                ,  340, 170,  50,  20 },
   { TEXT_CreateIndirect,      "speedError",        0                ,  340, 200,  50,  20 },
   { SPINBOX_CreateIndirect,  NULL,                GUI_ID_SPINBOX0	, 	10, 180,  80,  50, 0, 0, 0 },
@@ -264,7 +265,7 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
 	hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT3);
 	EDIT_SetFloatMode(hItem, 0.0, -999.0, 999.0, 2, 0);
 	hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT4);
-	EDIT_SetDecMode(hItem,0,-200000,200000,0,0);
+	EDIT_SetFloatMode(hItem, 0.0, -999.0, 999.0, 2, 0);
 	hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT5);
 	EDIT_SetFloatMode(hItem, 0.0, -999.0, 999.0, 2, 0);
 	hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT6);
@@ -338,6 +339,7 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
     	  motor.setEnable(true);
     	break;
       case GUI_ID_BUTTON2:			// Stop button
+    	  motor.stop();
     	  motor.setEnable(false);
     	  break;
       case GUI_ID_BUTTON3:			// Direction button
@@ -465,7 +467,7 @@ void MainTask(void) {
       EDIT_SetFloatValue(hItem, encoder.getDistance());
 
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT4);
-      EDIT_SetValue(hItem, encoder.getCount());
+      EDIT_SetFloatValue(hItem, pid.calculate(encoder.getSpeedError()));
 
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT5);
       EDIT_SetFloatValue(hItem, encoder.getRevolution());
@@ -473,7 +475,7 @@ void MainTask(void) {
 /*      hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT6);
       EDIT_SetFloatValue(hItem, encoder.getSpeedCommand() - encoder.getSpeed());*/
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT6);
-      EDIT_SetFloatValue(hItem, TempPID);
+      EDIT_SetFloatValue(hItem, encoder.getSpeedError());
 
       _AddValues();
     }

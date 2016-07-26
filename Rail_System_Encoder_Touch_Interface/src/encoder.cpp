@@ -127,6 +127,14 @@ void Encoder::setSpeedCommand(float inputSpeedCommand)
 {
 	speedCommand_ = inputSpeedCommand;
 }
+float Encoder::getSpeedError(void)
+{
+	return speedError_;
+}
+void Encoder::setSpeedError(float inputSpeedError)
+{
+	speedError_ = inputSpeedError;
+}
 float Encoder::getDistance(void)
 {
 	return(getRevolution() * 3.145f * Belt_Pully_Diameter / Inches_Per_Meter * 100.0f * 4.0f);

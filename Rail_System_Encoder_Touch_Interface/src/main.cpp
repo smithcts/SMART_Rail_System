@@ -39,26 +39,23 @@
 //#define ARM_MATH_CM7
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "arm_math.h"
+
 
 /* Private typedef -----------------------------------------------------------*/
 TIM_HandleTypeDef TimHandle;
-TIM_OC_InitTypeDef sConfig;
+
 /* Private define ------------------------------------------------------------*/
-#define kp  0.50f
-#define ki  0.0f
-#define kd  0.0f
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-float TempPID;
+float TempPID = 40.0f;
+
+float g_kp = 0.0f;
+float g_ki = 0.0f;
+float g_kd = 0.0f;
 
 Motor motor;
 Encoder encoder;
-
-arm_pid_instance_f32 PID;
-Pid pid(15.0f,0.0f,0.0f,-0.0,0.0,-100.0f,100.0f);
-
-
+PidController pid(0.0f,0.0f,0.0f);
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
 extern void MainTask(void);
@@ -84,12 +81,13 @@ int main(void) {
 	/* Configure the system clock to 200 MHz */
 	SystemClock_Config();
 
-	// Used to refresh the touch screen and to convert the STemWin screen info to HAL_GUI info
+	/* Initialize Board Specific Peripherals such as TouchScreen and SDRAM*/
 	BspInit();
 
 	/* Configure LED1 */
 	BSP_LED_Init(LED1);
 
+	/* Configure Interrupt GPIO lines for limit switches*/
 	EXTI15_10_IRQHandler_Config();
 	EXTI9_5_IRQHandler_Config();
 
@@ -100,7 +98,6 @@ int main(void) {
 	TimHandle.Instance = TIM3;
 
 	/* Initialize TIM3 peripheral as follows:
-
 	 + Period = 500 - 1
 	 + Prescaler = ((SystemCoreClock/2)/10000) - 1
 	 + TIM3 Clock is at 50 MHz
@@ -123,21 +120,6 @@ int main(void) {
 		}
 	}
 
-	GPIO_InitTypeDef GPIO_InitStruct;
-
-	// Enable GPIO Ports
-	__HAL_RCC_GPIOG_CLK_ENABLE();
-	__HAL_RCC_GPIOB_CLK_ENABLE();
-
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-	GPIO_InitStruct.Pin = GPIO_PIN_6;
-	HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
-	GPIO_InitStruct.Pin = GPIO_PIN_4;
-	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-
 	/***********************************************************/
 
 	/* Init the STemWin GUI Library */
@@ -151,35 +133,24 @@ int main(void) {
 	WM_SetCreateFlags(WM_CF_MEMDEV);
 
 	while (1) {
-		// Starts the MainTask() Function which is in an External .c file
+		/*Starts the MainTask() Function which is in an External .c file*/
 		MainTask();
 	}
 }
-/**
- * @brief  Period elapsed callback in non blocking mode
- * @param  htim: TIM handle
- * @retval None
- */
 
 
-DerivativeFilter speedFilter(0.001, 50.0f, 0.707f);
-
+DerivativeFilter speedFilter(0.001, 1.0f, 0.707f);
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	TouchUpdate();
-	static float speedError;
-
 	encoder.setSpeed(speedFilter.calculate(encoder.getDistance()));
+	if (motor.getEnable())
+		pid.setPid(g_kp,g_ki,g_kd);
+		else
+		pid.setPid(0.0f,0.0f,0.0f);
 
-	if (motor.getEnable()) {
-		speedError = encoder.getSpeedCommand() - encoder.getSpeed();
-
-		motor.setDuty(arm_pid_f32(&PID, speedError));
-		TempPID = pid.calculate(speedError,0.001f);
-
-//		motor.setDuty(arm_pid_f32(&PID, speedError));
-
-	} else
-		motor.setDuty(0);
+	encoder.setSpeedError(encoder.getSpeedCommand() - encoder.getSpeed());
+	motor.setDuty(pid.calculate(encoder.getSpeedError()));
+//	motor.setDuty((int)TempPID);
 }
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 	if (encoder.getDirection() && HAL_GPIO_ReadPin(GPIOF,GPIO_PIN_9)){
@@ -258,10 +229,10 @@ static void EXTI15_10_IRQHandler_Config(void)
 {
   GPIO_InitTypeDef   GPIO_InitStructure;
 
-  /* Enable GPIOC clock */
+  /* Enable GPIOF clock */
   __HAL_RCC_GPIOF_CLK_ENABLE();
 
-  /* Configure PC.13 pin as input floating */
+  /* Configure PC.10 pin as input floating */
   GPIO_InitStructure.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStructure.Pull = GPIO_PULLDOWN;
   GPIO_InitStructure.Pin = GPIO_PIN_10;
@@ -276,16 +247,16 @@ static void EXTI9_5_IRQHandler_Config(void)
 {
   GPIO_InitTypeDef   GPIO_InitStructure;
 
-  /* Enable GPIOC clock */
+  /* Enable GPIOF clock */
   __HAL_RCC_GPIOF_CLK_ENABLE();
 
-  /* Configure PC.13 pin as input floating */
+  /* Configure PC.9 pin as input floating */
   GPIO_InitStructure.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStructure.Pull = GPIO_PULLDOWN;
   GPIO_InitStructure.Pin = GPIO_PIN_9;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStructure);
 
-  /* Enable and set EXTI lines 15 to 10 Interrupt to the lowest priority */
+  /* Enable and set EXTI lines 9 to 5 Interrupt to the lowest priority */
   HAL_NVIC_SetPriority(EXTI9_5_IRQn, 2, 0);
   HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 }

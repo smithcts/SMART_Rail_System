@@ -29,12 +29,16 @@ class Encoder
 		float getSpeedCommand(void);
 		void setSpeedCommand(float inputSpeedCommand);
 
+		float getSpeedError(void);
+		void setSpeedError(float inputSpeedError);
+
 		void Error_Handler(void);
 	private:
 		uint16_t prev_counter_;
 		int16_t overflows_;
 		float speed_;
 		float speedCommand_;
+		float speedError_;
 		bool direction_;
 };
 

@@ -42,6 +42,7 @@
 
 
 /* Includes ------------------------------------------------------------------*/
+#include <PidController.h>
 #include "stm32f7xx_hal.h"
 #include "GUI.h"
 #include "stm32746g_discovery_ts.h"
@@ -57,8 +58,9 @@
 #include "encoder.h"
 #include "system_variables.h"
 #include "Derivative_Filter.h"
-#include "pid.h"
 #include "stdlib.h"
+#include "arm_math.h"
+
 
 extern float TempPID;
 

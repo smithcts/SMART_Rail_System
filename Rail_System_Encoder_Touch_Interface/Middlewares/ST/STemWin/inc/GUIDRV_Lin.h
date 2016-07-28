@@ -34,6 +34,8 @@ Purpose     : Interface definition for GUIDRV_Lin driver
 #ifndef GUIDRV_LIN_H
 #define GUIDRV_LIN_H
 
+#include <GUI.h>
+
 #if defined(__cplusplus)
 extern "C" {     /* Make sure we have C-declarations in C++ programs */
 #endif

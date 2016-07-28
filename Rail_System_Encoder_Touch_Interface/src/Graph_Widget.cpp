@@ -27,9 +27,10 @@ Requirements: WindowManager - (x)
 */
 #include <stdlib.h>
 #include <string.h>
-#include "main.h"
-#include "DIALOG.h"
-#include "GRAPH.h"
+#include <DIALOG.h>
+#include <GRAPH.h>
+#include <motor.h>
+
 
 /*********************************************************************
 *
@@ -60,8 +61,6 @@ static int _Stop = 0;
 static GUI_COLOR _aColor[] = {GUI_RED, GUI_GREEN, GUI_LIGHTBLUE}; // Array of colors for the GRAPH_DATA objects
 
 extern Motor motor;
-extern Encoder encoder;
-extern PidController pid;
 
 //
 // Dialog ressource
@@ -116,8 +115,8 @@ static void _AddValues(void) {
   unsigned i;
 
   for (i = 0; i < GUI_COUNTOF(_aColor); i++) {
-    _aValue[0] = encoder.getSpeedCommand() - encoder.getSpeed();
-    _aValue[1] = encoder.getSpeed() + 50;
+    _aValue[0] = motor.getSpeedCommand() - motor.getSpeed();
+    _aValue[1] = motor.getSpeed() + 50;
     _aValue[2] = motor.getDuty();
     if (_aValue[i] > MAX_VALUE) {
       _aValue[i] = MAX_VALUE;
@@ -344,10 +343,10 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
     	  break;
       case GUI_ID_BUTTON3:			// Direction button
     	  motor.setEnable(false);
-				if (encoder.getDirection())
-					encoder.setDirection(false);
-				else if (!encoder.getDirection())
-					encoder.setDirection(true);
+				if (motor.getMotorDirection())
+					motor.setMotorDirection(false);
+				else if (!motor.getMotorDirection())
+					motor.setMotorDirection(true);
 		  motor.setEnable(true);
     	  break;
       }
@@ -400,12 +399,12 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
         // Set horizontal grid spacing
         //
         hItem = WM_GetDialogItem(hDlg, GUI_ID_GRAPH0);
-        encoder.setSpeedCommand(SLIDER_GetValue(pMsg->hWinSrc));
+        motor.setSpeedCommand(SLIDER_GetValue(pMsg->hWinSrc));
 
         break;
       case GUI_ID_SPINBOX0:
           hItem = WM_GetDialogItem(pMsg->hWin, GUI_ID_SPINBOX0);
-          encoder.setSpeedCommand(SPINBOX_GetValue(pMsg->hWinSrc));
+          motor.setSpeedCommand(SPINBOX_GetValue(pMsg->hWinSrc));
           break;
       }
       break;
@@ -455,27 +454,27 @@ void MainTask(void) {
         hGraph = WM_GetDialogItem(hDlg, GUI_ID_GRAPH0);
       }
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT0);
-      EDIT_SetFloatValue(hItem, encoder.getSpeed());
+      EDIT_SetFloatValue(hItem, motor.getSpeed());
 
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT1);
       EDIT_SetFloatValue(hItem, motor.getDuty());
 
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT2);
-      EDIT_SetFloatValue(hItem, encoder.getSpeedCommand());
+      EDIT_SetFloatValue(hItem, motor.getSpeedCommand());
 
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT3);
-      EDIT_SetFloatValue(hItem, encoder.getDistance());
+      EDIT_SetFloatValue(hItem, motor.getDistance());
 
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT4);
-      EDIT_SetFloatValue(hItem, pid.calculate(encoder.getSpeedError()));
+      EDIT_SetFloatValue(hItem, 0);
 
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT5);
-      EDIT_SetFloatValue(hItem, encoder.getRevolution());
+      EDIT_SetFloatValue(hItem, motor.getRevolution());
 
 /*      hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT6);
-      EDIT_SetFloatValue(hItem, encoder.getSpeedCommand() - encoder.getSpeed());*/
+      EDIT_SetFloatValue(hItem, motor.getSpeedCommand() - motor.getSpeed());*/
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT6);
-      EDIT_SetFloatValue(hItem, encoder.getSpeedError());
+      EDIT_SetFloatValue(hItem, motor.getSpeedError());
 
       _AddValues();
     }

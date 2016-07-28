@@ -39,28 +39,14 @@
 #ifndef __MAIN_H
 #define __MAIN_H
 
-
-
-/* Includes ------------------------------------------------------------------*/
-#include <PidController.h>
-#include "stm32f7xx_hal.h"
-#include "GUI.h"
-#include "stm32746g_discovery_ts.h"
-#include "stm32746g_discovery_lcd.h"
-#include "stm32746g_discovery_qspi.h"
-#include "WM.h"
-#include "BUTTON.h"
-/* EVAL includes component */
-#include "stm32746g_discovery.h"
-#include "stm32746g_discovery_sdram.h"
-#include "bsp.h"
-#include "motor.h"
-#include "encoder.h"
-#include "system_variables.h"
-#include "Derivative_Filter.h"
-#include "stdlib.h"
-#include "arm_math.h"
-
+#include <motor.h>
+#include <stm32f7xx_hal.h>
+#include <GUI.h>
+#include <bsp.h>
+#include <WM.h>
+#include <stm32f7xx.h>
+#include <system_stm32f7xx.h>
+#include <Derivative_Filter.h>
 
 extern float TempPID;
 

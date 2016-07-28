@@ -16,12 +16,13 @@
   *
   ******************************************************************************
   */
-#include "main.h"
-#include "GUIDRV_Lin.h"
-
 #ifndef LCDCONF_H
 #define LCDCONF_H
 
+#include "stdlib.h"
+#include "GUIDRV_Lin.h"
+#include "stm32f7xx_hal.h"
+#include "stm32746g_discovery.h"
 
 typedef struct
 {

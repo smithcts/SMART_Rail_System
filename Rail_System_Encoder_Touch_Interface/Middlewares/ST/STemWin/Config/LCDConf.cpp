@@ -36,8 +36,8 @@
   */ 
 
 /* Includes ------------------------------------------------------------------*/
-#include "LCDConf.h"
-#include "GUI_Private.h"
+#include <LCDConf.h>
+#include <GUI_Private.h>
 
 /** @addtogroup LCD CONFIGURATION
 * @{

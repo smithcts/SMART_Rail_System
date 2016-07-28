@@ -34,7 +34,11 @@
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
+#include <stm32746g_discovery_qspi.h>
+#include <stm32746g_discovery_sdram.h>
+#include <stm32746g_discovery_ts.h>
+#include <GUI.h>
+#include <stm32746g_discovery_lcd.h>
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/

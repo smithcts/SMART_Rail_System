@@ -144,6 +144,7 @@ DerivativeFilter speedFilter(0.001, 15.0f, 0.707f);
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	TouchUpdate();
 
+	BSP_LED_On(LED1);
 
 /*	encoder.setSpeed(speedFilter.calculate(encoder.getDistance()));
 	if (motor.getEnable())

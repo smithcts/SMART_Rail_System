@@ -49,9 +49,9 @@ TIM_HandleTypeDef TimHandle;
 /* Private variables ---------------------------------------------------------*/
 float TempPID = 40.0f;
 
-float g_kp = 0.0f;
-float g_ki = 0.0f;
-float g_kd = 0.0f;
+float g_kp = 3.0f;
+float g_ki = 0.025f;
+float g_kd = 0.025f;
 
 Motor motor;
 Encoder encoder;
@@ -132,6 +132,7 @@ int main(void) {
 	/* Activate the use of memory device feature */
 	WM_SetCreateFlags(WM_CF_MEMDEV);
 
+	motor.setDuty(100);
 	while (1) {
 		/*Starts the MainTask() Function which is in an External .c file*/
 		MainTask();
@@ -139,25 +140,32 @@ int main(void) {
 }
 
 
-DerivativeFilter speedFilter(0.001, 1.0f, 0.707f);
+DerivativeFilter speedFilter(0.001, 15.0f, 0.707f);
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	TouchUpdate();
-	encoder.setSpeed(speedFilter.calculate(encoder.getDistance()));
+
+
+/*	encoder.setSpeed(speedFilter.calculate(encoder.getDistance()));
 	if (motor.getEnable())
 		pid.setPid(g_kp,g_ki,g_kd);
 		else
 		pid.setPid(0.0f,0.0f,0.0f);
 
 	encoder.setSpeedError(encoder.getSpeedCommand() - encoder.getSpeed());
-	motor.setDuty(pid.calculate(encoder.getSpeedError()));
+	motor.setDuty(pid.calculate(encoder.getSpeedError()));*/
+
 //	motor.setDuty((int)TempPID);
 }
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-	if (encoder.getDirection() && HAL_GPIO_ReadPin(GPIOF,GPIO_PIN_9)){
+	if (HAL_GPIO_ReadPin(GPIOF,GPIO_PIN_9)){
+		BSP_LED_Toggle(LED1);
 		motor.setEnable(false);
+		motor.setDuty(0);
 	}
 	else if (HAL_GPIO_ReadPin(GPIOF,GPIO_PIN_10)){
+		BSP_LED_Toggle(LED1);
 		motor.setEnable(false);
+		motor.setDuty(0);
 	}
 }
 /**

@@ -73,39 +73,21 @@ void SystemClock_Config(void) {
 		while (1) {;}
 	}
 }
-void EXTI15_10_IRQHandler_Config(void)
+
+void InitLimitPins(void)
 {
-  GPIO_InitTypeDef   GPIO_InitStructure;
+	GPIO_InitTypeDef GPIO_Limit_Pin_Handle;
+/*		Initialization of GPIO pins for motor direction control*/
+	/*Enable GPIO Ports*/
+	__HAL_RCC_GPIOF_CLK_ENABLE();
 
-  /* Enable GPIOF clock */
-  __HAL_RCC_GPIOF_CLK_ENABLE();
-
-  /* Configure PC.10 pin as input floating */
-  GPIO_InitStructure.Mode = GPIO_MODE_IT_RISING_FALLING;
-  GPIO_InitStructure.Pull = GPIO_PULLDOWN;
-  GPIO_InitStructure.Pin = GPIO_PIN_10;
-  HAL_GPIO_Init(GPIOF, &GPIO_InitStructure);
-
-  /* Enable and set EXTI lines 15 to 10 Interrupt to the lowest priority */
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 2, 0);
-  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
-}
-void EXTI9_5_IRQHandler_Config(void)
-{
-  GPIO_InitTypeDef   GPIO_InitStructure;
-
-  /* Enable GPIOF clock */
-  __HAL_RCC_GPIOF_CLK_ENABLE();
-
-  /* Configure PC.9 pin as input floating */
-  GPIO_InitStructure.Mode = GPIO_MODE_IT_RISING_FALLING;
-  GPIO_InitStructure.Pull = GPIO_PULLDOWN;
-  GPIO_InitStructure.Pin = GPIO_PIN_9;
-  HAL_GPIO_Init(GPIOF, &GPIO_InitStructure);
-
-  /* Enable and set EXTI lines 9 to 5 Interrupt to the lowest priority */
-  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 2, 0);
-  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+	GPIO_Limit_Pin_Handle.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_Limit_Pin_Handle.Pull = GPIO_PULLDOWN;
+	GPIO_Limit_Pin_Handle.Speed = GPIO_SPEED_HIGH;
+	GPIO_Limit_Pin_Handle.Pin = GPIO_PIN_10;
+	HAL_GPIO_Init(GPIOF, &GPIO_Limit_Pin_Handle);
+	GPIO_Limit_Pin_Handle.Pin = GPIO_PIN_9;
+	HAL_GPIO_Init(GPIOF, &GPIO_Limit_Pin_Handle);
 }
 void CallbackTimer(void)
 {

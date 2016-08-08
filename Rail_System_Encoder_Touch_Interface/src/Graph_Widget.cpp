@@ -111,18 +111,22 @@ static const GUI_WIDGET_CREATE_INFO _aDialogCreate[] = {
 *   This routine calculates new random values in dependence of the previous added values
 *   and adds them to the GRAPH_DATA objects
 */
-static void _AddValues(void) {
+static void _AddValues(void)
+{
   unsigned i;
 
-  for (i = 0; i < GUI_COUNTOF(_aColor); i++) {
+  for (i = 0; i < GUI_COUNTOF(_aColor); i++)
+  {
     _aValue[0] = motor.getSpeedCommand() - motor.getSpeed();
     _aValue[1] = motor.getSpeed() + 50;
     _aValue[2] = motor.getDuty();
-    if (_aValue[i] > MAX_VALUE) {
-      _aValue[i] = MAX_VALUE;
-    } else if (_aValue[i] < -MAX_VALUE) {
-      _aValue[i] = -MAX_VALUE;
-    }
+
+    if (_aValue[i] > MAX_VALUE)
+    		_aValue[i] = MAX_VALUE;
+
+    else if (_aValue[i] < -MAX_VALUE)
+    		_aValue[i] = -MAX_VALUE;
+
     GRAPH_DATA_YT_AddValue(_ahData[i], _aValue[i]);
   }
 }
@@ -135,8 +139,10 @@ static void _AddValues(void) {
 *   This routine is called by the GRAPH object before anything is drawn
 *   and after the last drawing operation.
 */
-static void _UserDraw(WM_HWIN hWin, int Stage) {
-  if (Stage == GRAPH_DRAW_LAST) {
+static void _UserDraw(WM_HWIN hWin, int Stage)
+{
+  if (Stage == GRAPH_DRAW_LAST)
+  {
     char acText[] = "Speed (cm/s)";
     GUI_RECT Rect;
     GUI_RECT RectInvalid;
@@ -159,20 +165,24 @@ static void _UserDraw(WM_HWIN hWin, int Stage) {
 * Function description
 *   This routine hides/shows all windows except the button, graph and scroll bar widgets
 */
-static void _ForEach(WM_HWIN hWin, void * pData) {
-  int Id;
-  int FullScreenMode;
+static void _ForEach(WM_HWIN hWin, void * pData)
+{
 
-  FullScreenMode = *(int *)pData;
-  Id = WM_GetId(hWin);
-  if ((Id == GUI_ID_GRAPH0) || (Id == GUI_ID_BUTTON0) || (Id == GUI_ID_VSCROLL) || (Id == GUI_ID_HSCROLL)) {
-    return;
-  }
-  if (FullScreenMode) {
-    WM_HideWindow(hWin);
-  } else {
-    WM_ShowWindow(hWin);
-  }
+		int Id;
+		int FullScreenMode;
+
+		FullScreenMode = *(int *)pData;
+		Id = WM_GetId(hWin);
+
+		if ((Id == GUI_ID_GRAPH0) || (Id == GUI_ID_BUTTON0) || (Id == GUI_ID_VSCROLL) || (Id == GUI_ID_HSCROLL))
+			return;
+
+		if (FullScreenMode)
+			WM_HideWindow(hWin);
+
+		else
+			WM_ShowWindow(hWin);
+
 }
 
 /*********************************************************************
@@ -184,45 +194,51 @@ static void _ForEach(WM_HWIN hWin, void * pData) {
 *   widgets of the dialog, enlarging/shrinking the graph widget and modifying some other
 *   attributes of the dialog widgets.
 */
-static void _ToggleFullScreenMode(WM_HWIN hDlg) {
-  static int FullScreenMode;
-  static GUI_RECT Rect;
-  static unsigned ScalePos;
-  WM_HWIN hGraph;
-  WM_HWIN hButton;
-  WM_HWIN hClient;
-  GUI_RECT RectInside;
-  int xPos, yPos;
+static void _ToggleFullScreenMode(WM_HWIN hDlg)
+{
+	static int FullScreenMode;
+	static GUI_RECT Rect;
+	static unsigned ScalePos;
+	WM_HWIN hGraph;
+	WM_HWIN hButton;
+	WM_HWIN hClient;
+	GUI_RECT RectInside;
+	int xPos, yPos;
 
-  hGraph  = WM_GetDialogItem(hDlg, GUI_ID_GRAPH0);
-  hButton = WM_GetDialogItem(hDlg, GUI_ID_BUTTON0);
-  FullScreenMode ^= 1;
-  if (FullScreenMode) {
-    //
-    // Enter the full screen mode
-    //
-    hClient = WM_GetClientWindow(hDlg);
-    BUTTON_SetText(hButton, "Back");
-    WM_MoveWindow(hButton, 0, 11);
-    FRAMEWIN_SetTitleVis(hDlg, 0);
-    WM_GetInsideRectEx(hClient, &RectInside);
-    WM_GetWindowRectEx(hGraph, &Rect);
-    WM_ForEachDesc(hClient, _ForEach, &FullScreenMode); // Hide all descendants
-    xPos = WM_GetWindowOrgX(hClient);
-    yPos = WM_GetWindowOrgY(hClient);
-    WM_SetWindowPos(hGraph, xPos, yPos, RectInside.x1, RectInside.y1);
-    ScalePos = GRAPH_SCALE_SetPos(_hScaleH, RectInside.y1 - 20);
-  } else {
-    //
-    // Return to normal mode
-    //
-    BUTTON_SetText(hButton, "Full Screen");
-    WM_MoveWindow(hButton, 0, -11);
-    WM_ForEachDesc(WM_GetClientWindow(hDlg), _ForEach, &FullScreenMode); // Show all descendants
-    WM_SetWindowPos(hGraph, Rect.x0, Rect.y0, Rect.x1 - Rect.x0 + 1, Rect.y1 - Rect.y0 + 1);
-    FRAMEWIN_SetTitleVis(hDlg, 1);
-    GRAPH_SCALE_SetPos(_hScaleH, ScalePos);
-  }
+	hGraph  = WM_GetDialogItem(hDlg, GUI_ID_GRAPH0);
+	hButton = WM_GetDialogItem(hDlg, GUI_ID_BUTTON0);
+	FullScreenMode ^= 1;
+
+	if (FullScreenMode)
+	{
+		//
+		// Enter the full screen mode
+		//
+		hClient = WM_GetClientWindow(hDlg);
+		BUTTON_SetText(hButton, "Back");
+		WM_MoveWindow(hButton, 0, 11);
+		FRAMEWIN_SetTitleVis(hDlg, 0);
+		WM_GetInsideRectEx(hClient, &RectInside);
+		WM_GetWindowRectEx(hGraph, &Rect);
+		WM_ForEachDesc(hClient, _ForEach, &FullScreenMode); // Hide all descendants
+		xPos = WM_GetWindowOrgX(hClient);
+		yPos = WM_GetWindowOrgY(hClient);
+		WM_SetWindowPos(hGraph, xPos, yPos, RectInside.x1, RectInside.y1);
+		ScalePos = GRAPH_SCALE_SetPos(_hScaleH, RectInside.y1 - 20);
+	}
+
+	else
+	{
+		//
+		// Return to normal mode
+		//
+		BUTTON_SetText(hButton, "Full Screen");
+		WM_MoveWindow(hButton, 0, -11);
+		WM_ForEachDesc(WM_GetClientWindow(hDlg), _ForEach, &FullScreenMode); // Show all descendants
+		WM_SetWindowPos(hGraph, Rect.x0, Rect.y0, Rect.x1 - Rect.x0 + 1, Rect.y1 - Rect.y0 + 1);
+		FRAMEWIN_SetTitleVis(hDlg, 1);
+		GRAPH_SCALE_SetPos(_hScaleH, ScalePos);
+	}
 }
 /*********************************************************************
 *
@@ -335,19 +351,13 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
         _ToggleFullScreenMode(hDlg);
         break;
       case GUI_ID_BUTTON1:			// Start button
-    	  motor.setEnable(true);
+    	  motor.setDuty(motor.getSpeedCommand());
     	break;
       case GUI_ID_BUTTON2:			// Stop button
     	  motor.stop();
-    	  motor.setEnable(false);
     	  break;
       case GUI_ID_BUTTON3:			// Direction button
-    	  motor.setEnable(false);
-				if (motor.getMotorDirection())
-					motor.setMotorDirection(false);
-				else if (!motor.getMotorDirection())
-					motor.setMotorDirection(true);
-		  motor.setEnable(true);
+    	  motor.setDuty(-motor.getSpeedCommand());
     	  break;
       }
       break;
@@ -469,12 +479,12 @@ void MainTask(void) {
       EDIT_SetFloatValue(hItem, 0);
 
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT5);
-      EDIT_SetFloatValue(hItem, motor.getRevolution());
+      EDIT_SetFloatValue(hItem, motor.getDirection());
 
 /*      hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT6);
       EDIT_SetFloatValue(hItem, motor.getSpeedCommand() - motor.getSpeed());*/
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT6);
-      EDIT_SetFloatValue(hItem, motor.getSpeedError());
+      EDIT_SetFloatValue(hItem, motor.getMotorDirection());
 
       _AddValues();
     }

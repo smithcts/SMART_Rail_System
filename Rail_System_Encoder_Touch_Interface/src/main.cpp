@@ -51,8 +51,7 @@ Motor motor;
 /* Private function prototypes -----------------------------------------------*/
 extern void SystemClock_Config(void);
 extern void MainTask(void);
-extern void EXTI15_10_IRQHandler_Config(void);
-extern void EXTI9_5_IRQHandler_Config(void);
+extern void InitLimitPins(void);
 extern void CallbackTimer(void);
 /* Private functions ---------------------------------------------------------*/
 
@@ -75,11 +74,9 @@ int main(void)
 	/* Configure LED1 */
 	BSP_LED_Init(LED1);
 
-	/* Configure Interrupt GPIO lines for limit switches*/
-	EXTI15_10_IRQHandler_Config();
-	EXTI9_5_IRQHandler_Config();
-
 	CallbackTimer();
+
+	InitLimitPins();
 
 	/***********************************************************/
 
@@ -93,41 +90,34 @@ int main(void)
 	/* Activate the use of memory device feature */
 	WM_SetCreateFlags(WM_CF_MEMDEV);
 
-	while (1) {
+	while (1)
+	{
 		/*Starts the MainTask() Function which is in an External .c file*/
 		MainTask();
 	}
 }
-DerivativeFilter speedFilter(0.001, 15.0f, 0.707f);
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+
+DerivativeFilter speedFilter(0.001, 25.0f, 0.707f);
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+
 	TouchUpdate();
 
-	BSP_LED_On(LED1);
+/*	Far Limit, Gray wire*/
+	if (HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_10)
+			&& !motor.getMotorDirection())
 
-/*	encoder.setSpeed(speedFilter.calculate(encoder.getDistance()));
-	if (motor.getEnable())
-		pid.setPid(g_kp,g_ki,g_kd);
-		else
-		pid.setPid(0.0f,0.0f,0.0f);
+			motor.setDuty(0);
 
-	encoder.setSpeedError(encoder.getSpeedCommand() - encoder.getSpeed());
-	motor.setDuty(pid.calculate(encoder.getSpeedError()));*/
+/*	Near Limit, Blue wire */
+	else if (HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_9)
+			&& motor.getMotorDirection())
 
-//	motor.setDuty((int)TempPID);
+				motor.setDuty(0);
+
+	motor.setSpeed(speedFilter.calculate(motor.getDistance()));
+
 }
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-	if (HAL_GPIO_ReadPin(GPIOF,GPIO_PIN_9)){
-		BSP_LED_Toggle(LED1);
-		motor.setEnable(false);
-		motor.setDuty(0);
-	}
-	else if (HAL_GPIO_ReadPin(GPIOF,GPIO_PIN_10)){
-		BSP_LED_Toggle(LED1);
-		motor.setEnable(false);
-		motor.setDuty(0);
-	}
-}
-
 
 #ifdef  USE_FULL_ASSERT
 /**

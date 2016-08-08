@@ -13,13 +13,17 @@ TIM_HandleTypeDef    Encoder_Timer;
 /* Timer Encoder Configuration Structure declaration */
 TIM_Encoder_InitTypeDef Encoder_OutputCompare;
 
-Motor::Motor(void)
+Motor::Motor(void):
+		prescaler_(99),
+		period_(99),
+		enable_(false),
+		dir_(false),
+		duty_(0),
+		direction_(false),
+		speed_(0),
+		speedCommand_(0),
+		speedError_(0)
 {
-		duty_ = 0;
-		enable_ = false;
-		prescaler_ = 99;
-		period_ = 99;
-
 		InitMotor();
 		InitEncoder();
 }
@@ -110,58 +114,80 @@ void Motor::InitEncoder(void)
 	  /* Start the encoder interface */
 	  HAL_TIM_Encoder_Start(&Encoder_Timer, TIM_CHANNEL_ALL);
 }
-void Motor::setEnable(bool enable) {
+void Motor::setEnable(bool enable)
+{
 	enable_ = enable;
 }
-bool Motor::getEnable(void){
+
+bool Motor::getEnable(void)
+{
 	return enable_;
 }
+
 void Motor::stop(void)
 {
+	setDuty(0);
+
 	HAL_TIM_PWM_Stop(&PWM_Motor_Timer, TIM_CHANNEL_1);
 	HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
 }
+
 void Motor::setMotorDirection(bool dir)
 {
 	dir_ = dir;
-	if (dir == true) {
+
+	if (dir == true)
+	{
 		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);
-	} else{
+	}
+
+	else
+	{
 		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_SET);
 		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
 	}
 }
+
 bool Motor::getMotorDirection(void)
 {
 	return dir_;
 }
+
 void Motor::setDuty(int16_t dutyInput)
 {
 /*	Overflow protection, duty cycle cannot exceed the period of the TIM clock*/
 	int16_t maxLimit = period_ + 1;
+
 	if (dutyInput < -maxLimit)
 		duty_ = -maxLimit;
+
 	else if (dutyInput > maxLimit)
 		duty_ = maxLimit;
+
 	else
 		duty_ = dutyInput;
 
 /*	Reads duty cycle and sets direction if duty is positive or negative*/
-	if(duty_<0) setMotorDirection(true);
-	else setMotorDirection(false);
+	if(duty_<0)
+		setMotorDirection(true);
+
+	else
+		setMotorDirection(false);
 
 	PWM_Motor_OutputCompare.Pulse = abs(dutyInput);
 
 	HAL_TIM_PWM_ConfigChannel(&PWM_Motor_Timer, &PWM_Motor_OutputCompare, TIM_CHANNEL_1);
 
 	HAL_TIM_PWM_Start(&PWM_Motor_Timer, TIM_CHANNEL_1);
+
 }
 int16_t Motor::getDuty(void)
 {
 	return duty_;
 }
+
 void Motor::setCount(int32_t count32)
 {
     if (count32 < 0)

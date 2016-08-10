@@ -47,12 +47,18 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 Motor motor;
+PID control;
+arm_pid_instance_f32 pidControl;
 
 /* Private function prototypes -----------------------------------------------*/
 extern void SystemClock_Config(void);
 extern void MainTask(void);
 extern void InitLimitPins(void);
 extern void CallbackTimer(void);
+
+float g_KP = 5.0f;
+float g_KI = 0.0f;
+
 /* Private functions ---------------------------------------------------------*/
 
 /**
@@ -77,6 +83,11 @@ int main(void)
 	CallbackTimer();
 
 	InitLimitPins();
+
+	pidControl.Kp = 5.0f;
+	pidControl.Ki = 0.025f;
+	pidControl.Kd = 0.0f;
+	arm_pid_init_f32(&pidControl, 1);
 
 	/***********************************************************/
 
@@ -106,16 +117,26 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 /*	Far Limit, Gray wire*/
 	if (HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_10)
 			&& !motor.getMotorDirection())
-
+	{
+			arm_pid_reset_f32(&pidControl);
 			motor.setDuty(0);
-
+	}
 /*	Near Limit, Blue wire */
 	else if (HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_9)
 			&& motor.getMotorDirection())
-
-				motor.setDuty(0);
-
-	motor.setSpeed(speedFilter.calculate(motor.getDistance()));
+	{
+			arm_pid_reset_f32(&pidControl);
+			motor.setDuty(0);
+	}
+	else
+	{
+			motor.setSpeed(speedFilter.calculate(motor.getDistance()));
+			motor.setSpeedError(motor.getSpeedCommand() - motor.getSpeed());
+			//int16_t speed = arm_pid_f32(&pidControl,motor.getSpeedError());
+			motor.setDuty(control.calculate(motor.getSpeedError(),g_KP,g_KI,0.001f));
+			//if(abs(speed) > 95) motor.setDuty((int)motor.getSpeedCommand());
+			//else motor.setDuty(speed);
+	}
 
 }
 

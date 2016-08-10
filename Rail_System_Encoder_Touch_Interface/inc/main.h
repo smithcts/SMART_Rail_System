@@ -47,6 +47,8 @@
 #include <stm32f7xx.h>
 #include <system_stm32f7xx.h>
 #include <Derivative_Filter.h>
+#include <arm_math.h>
+#include "pid_control.h"
 
 extern float TempPID;
 

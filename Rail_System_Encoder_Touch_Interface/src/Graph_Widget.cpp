@@ -29,7 +29,8 @@ Requirements: WindowManager - (x)
 #include <string.h>
 #include <DIALOG.h>
 #include <GRAPH.h>
-#include <motor.h>
+#include "motor.h"
+#include "pid_control.h"
 
 
 /*********************************************************************
@@ -61,6 +62,7 @@ static int _Stop = 0;
 static GUI_COLOR _aColor[] = {GUI_RED, GUI_GREEN, GUI_LIGHTBLUE}; // Array of colors for the GRAPH_DATA objects
 
 extern Motor motor;
+extern PID control;
 
 //
 // Dialog ressource
@@ -476,15 +478,15 @@ void MainTask(void) {
       EDIT_SetFloatValue(hItem, motor.getDistance());
 
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT4);
-      EDIT_SetFloatValue(hItem, 0);
+      EDIT_SetFloatValue(hItem, motor.getSpeedError());
 
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT5);
-      EDIT_SetFloatValue(hItem, motor.getDirection());
+      EDIT_SetFloatValue(hItem, control.getIntegral());
 
 /*      hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT6);
       EDIT_SetFloatValue(hItem, motor.getSpeedCommand() - motor.getSpeed());*/
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT6);
-      EDIT_SetFloatValue(hItem, motor.getMotorDirection());
+      EDIT_SetFloatValue(hItem, control.getProportional());
 
       _AddValues();
     }

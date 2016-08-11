@@ -41,13 +41,12 @@
 
 #include <motor.h>
 #include <stm32f7xx_hal.h>
-#include <GUI.h>
 #include <bsp.h>
 #include <WM.h>
 #include <stm32f7xx.h>
 #include <system_stm32f7xx.h>
 #include <Derivative_Filter.h>
-#include <arm_math.h>
+#include <Screen_Icons.h>
 #include "pid_control.h"
 
 extern float TempPID;

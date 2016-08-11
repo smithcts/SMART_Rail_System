@@ -12,13 +12,19 @@ class PID
 {
 public:
 
-	PID(void);
+	PID(float kp, float ki, float kd);
+	void setGain(float kp, float ki, float kd);
 	float getIntegral(void);
+	void resetIntegral(void);
 	float getProportional(void);
-	float calculate(float error, float kp, float ki, float dt);
+	float calculate(float error, float dt);
 private:
+	float kp_;
+	float ki_;
+	float kd_;
 	float proportional_;
 	float integral_;
+	float derivative_;
 
 };
 

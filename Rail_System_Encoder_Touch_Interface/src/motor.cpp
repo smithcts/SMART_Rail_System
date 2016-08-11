@@ -272,6 +272,7 @@ float Motor::getRevolution(void)
 {
 	return(((float)getCount() / Pulses_Per_Revolution / Motor_Gear_Ratio));
 }
+
 void Motor::Error_Handler(void)
 {
 	/* Turn LED1 on */

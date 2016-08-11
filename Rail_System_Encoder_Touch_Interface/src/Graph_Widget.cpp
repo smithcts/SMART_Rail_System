@@ -29,6 +29,7 @@ Requirements: WindowManager - (x)
 #include <string.h>
 #include <DIALOG.h>
 #include <GRAPH.h>
+#include <Screen_Icons.h>
 #include "motor.h"
 #include "pid_control.h"
 
@@ -63,7 +64,7 @@ static GUI_COLOR _aColor[] = {GUI_RED, GUI_GREEN, GUI_LIGHTBLUE}; // Array of co
 
 extern Motor motor;
 extern PID control;
-
+GUI gui;
 //
 // Dialog ressource
 //
@@ -119,9 +120,9 @@ static void _AddValues(void)
 
   for (i = 0; i < GUI_COUNTOF(_aColor); i++)
   {
-    _aValue[0] = motor.getSpeedCommand() - motor.getSpeed();
-    _aValue[1] = motor.getSpeed() + 50;
-    _aValue[2] = motor.getDuty();
+    _aValue[0] = abs(motor.getSpeedError());
+    _aValue[1] = abs(motor.getSpeed());
+    _aValue[2] = abs(motor.getDuty());
 
     if (_aValue[i] > MAX_VALUE)
     		_aValue[i] = MAX_VALUE;
@@ -353,13 +354,14 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
         _ToggleFullScreenMode(hDlg);
         break;
       case GUI_ID_BUTTON1:			// Start button
-    	  motor.setDuty(motor.getSpeedCommand());
+    	  motor.setSpeedCommand(gui.getSlider());
     	break;
       case GUI_ID_BUTTON2:			// Stop button
-    	  motor.stop();
+    	  motor.setSpeedCommand(0.0f);
+    	  control.resetIntegral();
     	  break;
       case GUI_ID_BUTTON3:			// Direction button
-    	  motor.setDuty(-motor.getSpeedCommand());
+    	  motor.setSpeedCommand(-gui.getSlider());
     	  break;
       }
       break;
@@ -411,7 +413,7 @@ static void _cbCallback(WM_MESSAGE * pMsg) {
         // Set horizontal grid spacing
         //
         hItem = WM_GetDialogItem(hDlg, GUI_ID_GRAPH0);
-        motor.setSpeedCommand(SLIDER_GetValue(pMsg->hWinSrc));
+        gui.setSlider(SLIDER_GetValue(pMsg->hWinSrc));
 
         break;
       case GUI_ID_SPINBOX0:
@@ -483,8 +485,6 @@ void MainTask(void) {
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT5);
       EDIT_SetFloatValue(hItem, control.getIntegral());
 
-/*      hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT6);
-      EDIT_SetFloatValue(hItem, motor.getSpeedCommand() - motor.getSpeed());*/
       hItem = WM_GetDialogItem(hDlg, GUI_ID_EDIT6);
       EDIT_SetFloatValue(hItem, control.getProportional());
 

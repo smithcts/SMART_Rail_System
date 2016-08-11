@@ -36,7 +36,6 @@
  ******************************************************************************
  */
 
-//#define ARM_MATH_CM7
 /* Includes ------------------------------------------------------------------*/
 #include <main.h>
 
@@ -47,17 +46,14 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 Motor motor;
-PID control;
-arm_pid_instance_f32 pidControl;
+PID control(5.0f,2.0f,0.3f);
+
 
 /* Private function prototypes -----------------------------------------------*/
 extern void SystemClock_Config(void);
 extern void MainTask(void);
 extern void InitLimitPins(void);
 extern void CallbackTimer(void);
-
-float g_KP = 5.0f;
-float g_KI = 0.0f;
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -84,11 +80,6 @@ int main(void)
 
 	InitLimitPins();
 
-	pidControl.Kp = 5.0f;
-	pidControl.Ki = 0.025f;
-	pidControl.Kd = 0.0f;
-	arm_pid_init_f32(&pidControl, 1);
-
 	/***********************************************************/
 
 	/* Init the STemWin GUI Library */
@@ -108,35 +99,30 @@ int main(void)
 	}
 }
 
-DerivativeFilter speedFilter(0.001, 25.0f, 0.707f);
+DerivativeFilter speedFilter(0.001, 50.0f, 0.707f);
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 
 	TouchUpdate();
-
 /*	Far Limit, Gray wire*/
 	if (HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_10)
-			&& !motor.getMotorDirection())
+			&& (motor.getSpeedCommand() > 0))
 	{
-			arm_pid_reset_f32(&pidControl);
-			motor.setDuty(0);
+			motor.setSpeedCommand(0.0f);
+			control.resetIntegral();
 	}
 /*	Near Limit, Blue wire */
 	else if (HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_9)
-			&& motor.getMotorDirection())
+			&& (motor.getSpeedCommand() < 0))
 	{
-			arm_pid_reset_f32(&pidControl);
-			motor.setDuty(0);
+			motor.setSpeedCommand(0.0f);
+			control.resetIntegral();
 	}
-	else
-	{
-			motor.setSpeed(speedFilter.calculate(motor.getDistance()));
-			motor.setSpeedError(motor.getSpeedCommand() - motor.getSpeed());
-			//int16_t speed = arm_pid_f32(&pidControl,motor.getSpeedError());
-			motor.setDuty(control.calculate(motor.getSpeedError(),g_KP,g_KI,0.001f));
-			//if(abs(speed) > 95) motor.setDuty((int)motor.getSpeedCommand());
-			//else motor.setDuty(speed);
-	}
+
+	motor.setSpeed(speedFilter.calculate(motor.getDistance()));
+	motor.setSpeedError(motor.getSpeedCommand() - motor.getSpeed());
+	motor.setDuty(control.calculate(motor.getSpeedError(),0.001f));
+
 
 }
 

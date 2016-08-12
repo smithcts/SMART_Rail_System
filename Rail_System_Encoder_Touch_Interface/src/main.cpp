@@ -104,15 +104,15 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 
 	TouchUpdate();
-/*	Far Limit, Gray wire*/
-	if (HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_10)
+/*	Far Limit */
+	if (HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_9)
 			&& (motor.getSpeedCommand() > 0))
 	{
 			motor.setSpeedCommand(0.0f);
 			control.resetIntegral();
 	}
-/*	Near Limit, Blue wire */
-	else if (HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_9)
+/*	Near Limit */
+	else if (HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_10)
 			&& (motor.getSpeedCommand() < 0))
 	{
 			motor.setSpeedCommand(0.0f);
